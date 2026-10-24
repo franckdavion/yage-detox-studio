@@ -70,7 +70,7 @@ const PAR_FAMILLE = [
   [/arrière/, ["ventre", "sphinx"]],
   [/avant/, ["assisJambesTendues", "flexionAvant"]],
 ];
-function posesFor(p) {
+export function posesFor(p) {
   const pair = PAR_POSTURE[p.id] || PAR_FAMILLE.find(([re]) => re.test(`${p.famille || ""}`.toLowerCase()))?.[1] || ["assisJambesTendues", "assisTailleur"];
   return pair.map((k) => P[k]);
 }
@@ -87,88 +87,162 @@ function mix(a, b, t) {
 const T = { debut: 900, entree: 2600, tenue: 4200, retour: 1300 };
 const CYCLE = T.debut + T.entree + T.tenue + T.retour;
 
-function pathFor(j) {
-  const L = (...pts) => "M" + pts.map((p) => p.map((v) => v.toFixed(1)).join(" ")).join("L");
-  // Colonne légèrement courbe
-  const mid = lerp(j.N, j.P, 0.5);
-  const dx = j.P[1] - j.N[1], dy = -(j.P[0] - j.N[0]);
-  const len = Math.hypot(dx, dy) || 1;
-  const c = [mid[0] + (dx / len) * 6, mid[1] + (dy / len) * 6];
-  return {
-    spine: `M${j.N[0].toFixed(1)} ${j.N[1].toFixed(1)}Q${c[0].toFixed(1)} ${c[1].toFixed(1)} ${j.P[0].toFixed(1)} ${j.P[1].toFixed(1)}`,
-    leg1: L(j.P, j.K1, j.F1),
-    leg2: L(j.P, j.K2, j.F2),
-    arm1: L(j.N, j.E1, j.W1),
-    arm2: L(j.N, j.E2, j.W2),
-  };
-}
+// ---------- Personnage illustré ----------
+// Couleurs du personnage : peau poudrée, haut terracotta, legging sauge, tapis lin.
+const C = {
+  peau: "#f0d3bf", peauOmbre: "#ddb59c", cheveux: "#4b3a31", haut: "#c98b6b", hautOmbre: "#b07457",
+  legging: "#7d8f6e", leggingOmbre: "#66775a", tapis: "#5f6f53", joue: "#e6a58a",
+};
+const N2 = (v) => { const l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; };
+const f1 = (v) => v.toFixed(1);
+const seg = (...pts) => "M" + pts.map((q) => `${f1(q[0])} ${f1(q[1])}`).join("L");
 
-const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-// Monte l'animation dans `el`. Options : mode "boucle" (entrée + tenue) ou "tenue" (respiration seule).
-// Renvoie une fonction d'arrêt.
-export function mountPoseAnimation(el, posture, { mode = "boucle", background = true, breath = null } = {}) {
+// Crée le personnage dans `el` et renvoie un contrôleur piloté de l'extérieur (par le lecteur)
+// ou par sa propre horloge (fiche). Rien ne bouge tant que render() n'est pas appelé : la pause est naturelle.
+export function createCharacter(el, posture, { background = true, aspect = 1.5 } = {}) {
   const [start, end] = posesFor(posture);
+  // Variante « plus profonde » de la posture finale, atteinte progressivement pendant la tenue
+  const deep = {};
+  for (const k in end) deep[k] = [...end[k]];
+  for (const k of ["H", "N", "E1", "E2", "W1", "W2"]) deep[k] = [end[k][0] + (end.H[0] > end.P[0] ? 3 : -3) * (k === "H" ? 1 : 0.6), end[k][1] + 3.5];
+
   el.innerHTML = `
-    <div class="pose-anim">
+    <div class="pose-anim character">
       ${background ? zenIllustration({ ...posture, famille: "__aucune__" }).replace('class="zen-art"', 'class="zen-art no-figure"') : ""}
-      <svg class="pose-figure" viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet" aria-label="Animation : comment entrer dans ${posture.nom}" role="img">
-        <ellipse class="pose-shadow" cx="160" cy="160" rx="90" ry="4"/>
-        <g class="far" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path data-k="leg2"/><path data-k="arm2"/>
+      <svg class="pose-figure" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Personnage illustrant ${posture.nom}">
+        <circle data-k="aura" r="40" fill="#fbf8f3" opacity=".25"/>
+        <rect data-k="mat" rx="2.5" height="5" fill="${C.tapis}" opacity=".35"/>
+        <g stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path data-k="leg2" stroke="${C.leggingOmbre}" stroke-width="11"/>
+          <path data-k="arm2" stroke="${C.peauOmbre}" stroke-width="7"/>
+          <circle data-k="foot2" r="4.2" fill="${C.peauOmbre}" stroke="none"/>
+          <circle data-k="hand2" r="3.6" fill="${C.peauOmbre}" stroke="none"/>
+          <path data-k="torso" stroke="${C.haut}" stroke-width="17"/>
+          <circle data-k="hips" r="9" fill="${C.legging}" stroke="none"/>
+          <path data-k="leg1" stroke="${C.legging}" stroke-width="11.5"/>
+          <circle data-k="foot1" r="4.4" fill="${C.peau}" stroke="none"/>
+          <path data-k="neck" stroke="${C.peau}" stroke-width="6"/>
+          <path data-k="arm1" stroke="${C.peau}" stroke-width="7.5"/>
+          <circle data-k="hand1" r="3.8" fill="${C.peau}" stroke="none"/>
         </g>
-        <g class="near" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <path data-k="spine"/><path data-k="leg1"/><path data-k="arm1"/>
-        </g>
-        <circle data-k="head" r="10"/>
+        <circle data-k="bun" r="6" fill="${C.cheveux}"/>
+        <circle data-k="hair" r="12" fill="${C.cheveux}"/>
+        <circle data-k="head" r="10.5" fill="${C.peau}"/>
+        <circle data-k="cheek" r="2.6" fill="${C.joue}" opacity=".55"/>
+        <path data-k="eye" stroke="${C.cheveux}" stroke-width="1.4" stroke-linecap="round" fill="none"/>
       </svg>
       <span class="pose-label" data-k="label"></span>
     </div>`;
   const svg = el.querySelector(".pose-figure");
-  // Cadrage automatique : la silhouette remplit l'espace, quelle que soit la posture
+  // Cadrage automatique
   const pts = [...Object.values(start), ...Object.values(end)];
   const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
-  let x0 = Math.min(...xs) - 22, x1 = Math.max(...xs) + 22, y0 = Math.min(...ys) - 22, y1 = 166;
-  let w = Math.max(x1 - x0, 150), h = Math.max(y1 - y0, 96);
+  const x0 = Math.min(...xs) - 26, x1 = Math.max(...xs) + 26, y0 = Math.min(...ys) - 28, y1 = 168;
+  let w = Math.max(x1 - x0, 130), h = Math.max(y1 - y0, 90);
   const cx = (x0 + x1) / 2;
-  if (w / h < 1.6) { w = h * 1.6; }
-  svg.setAttribute("viewBox", `${(cx - w / 2).toFixed(1)} ${(y1 - h).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
-  svg.querySelector(".pose-shadow").setAttribute("rx", (w * 0.32).toFixed(1));
-  svg.querySelector(".pose-shadow").setAttribute("cx", cx.toFixed(1));
-  const parts = Object.fromEntries([...svg.querySelectorAll("[data-k]")].map((n) => [n.dataset.k, n]));
+  if (w / h < aspect) w = h * aspect; else h = w / aspect;
+  svg.setAttribute("viewBox", `${f1(cx - w / 2)} ${f1(y1 - h)} ${f1(w)} ${f1(h)}`);
+  const k = Object.fromEntries([...svg.querySelectorAll("[data-k]")].map((n) => [n.dataset.k, n]));
   const label = el.querySelector('[data-k="label"]');
-  const draw = (j) => {
-    const p = pathFor(j);
-    for (const k of ["spine", "leg1", "leg2", "arm1", "arm2"]) parts[k].setAttribute("d", p[k]);
-    parts.head.setAttribute("cx", j.H[0].toFixed(1));
-    parts.head.setAttribute("cy", j.H[1].toFixed(1));
+  k.mat.setAttribute("x", f1(x0 + 6)); k.mat.setAttribute("y", "158.5"); k.mat.setAttribute("width", f1(x1 - x0 - 12));
+  let lastLabel = null;
+
+  function draw(j, { breath = 0.5, blink = false, aura = 0.25 } = {}) {
+    // Torse courbe, cou, membres
+    const up = N2([j.N[0] - j.P[0], j.N[1] - j.P[1]]);
+    const neck = [j.N[0] + up[0] * 4, j.N[1] + up[1] * 4];
+    const mid = lerp(j.N, j.P, 0.5);
+    const per = [-up[1], up[0]];
+    const chest = (breath - 0.5) * 2.2; // la poitrine s'ouvre à l'inspiration
+    const c = [mid[0] + per[0] * (4 + chest), mid[1] + per[1] * (4 + chest)];
+    k.torso.setAttribute("d", `M${f1(j.N[0])} ${f1(j.N[1])}Q${f1(c[0])} ${f1(c[1])} ${f1(j.P[0])} ${f1(j.P[1])}`);
+    k.torso.setAttribute("stroke-width", f1(17 + chest * 0.8));
+    k.neck.setAttribute("d", seg(neck, lerp(neck, j.H, 0.55)));
+    k.leg1.setAttribute("d", seg(j.P, j.K1, j.F1));
+    k.leg2.setAttribute("d", seg(j.P, j.K2, j.F2));
+    k.arm1.setAttribute("d", seg(j.N, j.E1, j.W1));
+    k.arm2.setAttribute("d", seg(j.N, j.E2, j.W2));
+    const at = (n, q) => { n.setAttribute("cx", f1(q[0])); n.setAttribute("cy", f1(q[1])); };
+    at(k.hips, j.P); at(k.foot1, j.F1); at(k.foot2, j.F2); at(k.hand1, j.W1); at(k.hand2, j.W2); at(k.head, j.H);
+    // Orientation du visage : perpendiculaire au cou, du côté des jambes
+    const hd = N2([j.H[0] - j.N[0], j.H[1] - j.N[1]]);
+    const legs = [j.F1[0] - j.P[0], j.F1[1] - j.P[1] - 0.3 * Math.hypot(j.F1[0] - j.P[0], j.F1[1] - j.P[1])];
+    let face = [hd[1], -hd[0]];
+    if (face[0] * legs[0] + face[1] * legs[1] < 0) face = [-face[0], -face[1]];
+    at(k.bun, [j.H[0] - face[0] * 10 + hd[0] * 3, j.H[1] - face[1] * 10 + hd[1] * 3]);
+    // Cheveux : disque légèrement décalé vers l'arrière, le visage le recouvre en croissant
+    at(k.hair, [j.H[0] - face[0] * 2.6 - hd[0] * 1.2, j.H[1] - face[1] * 2.6 - hd[1] * 1.2]);
+    at(k.head, [j.H[0] + face[0] * 1.6, j.H[1] + face[1] * 1.6]);
+    // Visage : œil fermé (sérénité) ; clignement = trait plus fin
+    const eye = [j.H[0] + face[0] * 6 + hd[0] * 2, j.H[1] + face[1] * 6 + hd[1] * 2];
+    const side = [-hd[0] * 2.6, -hd[1] * 2.6];
+    k.eye.setAttribute("d", blink ? seg([eye[0] + side[0], eye[1] + side[1]], [eye[0] - side[0], eye[1] - side[1]])
+      : `M${f1(eye[0] + side[0])} ${f1(eye[1] + side[1])}Q${f1(eye[0] + face[0] * 1.6)} ${f1(eye[1] + face[1] * 1.6)} ${f1(eye[0] - side[0])} ${f1(eye[1] - side[1])}`);
+    at(k.cheek, [j.H[0] + face[0] * 6 - hd[0] * 3.5, j.H[1] + face[1] * 6 - hd[1] * 3.5]);
+    // Aura de respiration autour du buste
+    at(k.aura, mid);
+    k.aura.setAttribute("r", f1(30 + breath * 14));
+    k.aura.setAttribute("opacity", aura.toFixed(2));
+  }
+
+  const breatheOn = (pose, b, amp = 1) => {
+    const o = { ...pose };
+    const lift = (b - 0.5) * 2.6 * amp;
+    for (const q of ["H", "N", "E1", "E2"]) o[q] = [pose[q][0], pose[q][1] - lift];
+    return o;
   };
-
-  if (reduced()) { draw(end); label.textContent = "Posture finale"; return () => {}; }
-
-  let raf, t0 = performance.now(), lastLabel = "";
   const setLabel = (t) => { if (t !== lastLabel) { lastLabel = t; label.textContent = t; } };
+  const softBreath = (t) => (Math.sin(t / 1700) + 1) / 2;
+
+  // État piloté : phase ("installation" | "tenue" | "sortie" | "fin"), t (ms dans la phase),
+  // length (durée totale de la phase si connue), breath (0 → expiré, 1 → inspiré)
+  function render({ phase, t = 0, length = 0, breath = null, inhale = null }) {
+    const blink = phase !== "fin" && t % 6200 > 6050;
+    if (phase === "installation") {
+      const T0 = 1400, T1 = 4600;
+      if (t < T0) { draw(start, { breath: softBreath(t), blink }); setLabel("Je m'installe"); }
+      else if (t < T0 + T1) { draw(mix(start, end, ease((t - T0) / T1)), { breath: 0.5, blink }); setLabel("J'entre doucement"); }
+      else { const b = softBreath(t); draw(breatheOn(end, b, 0.6), { breath: b, blink, aura: 0.2 + b * 0.1 }); setLabel("Je trouve mon confort"); }
+    } else if (phase === "tenue") {
+      const b = breath ?? softBreath(t);
+      const melt = length ? ease(Math.min(1, t / length)) : 0; // on « fond » peu à peu dans la posture
+      draw(breatheOn(mix(end, deep, melt), b, 1.3), { breath: b, blink, aura: 0.18 + b * 0.22 });
+      setLabel((inhale ?? b > 0.5) ? "J'inspire…" : "J'expire…");
+    } else if (phase === "sortie") {
+      const T1 = 4200;
+      if (t < T1) { draw(mix(end, start, ease(t / T1)), { breath: 0.5 }); setLabel("Je sors en douceur"); }
+      else { const b = softBreath(t); draw(breatheOn(start, b, 0.5), { breath: b, aura: 0.25 }); setLabel("Je ressens"); }
+    } else {
+      const b = softBreath(t);
+      draw(breatheOn(start, b, 0.4), { breath: b, aura: 0.35 }); setLabel("Namasté");
+    }
+  }
+  render({ phase: "installation", t: 0 });
+  return { render, el: svg };
+}
+
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Animation autonome (fiche posture) : le personnage enchaîne entrée, tenue et sortie en boucle.
+// Renvoie une fonction d'arrêt.
+export function mountPoseAnimation(el, posture, { mode = "boucle", breath = null } = {}) {
+  const ch = createCharacter(el, posture);
+  if (reduced()) { ch.render({ phase: "tenue", t: 0, breath: 0.5 }); return () => {}; }
+  const D = { installation: 7500, tenue: 7000, sortie: 5200 };
+  const order = ["installation", "tenue", "sortie"];
+  const total = D.installation + D.tenue + D.sortie;
+  let raf, t0 = performance.now();
   const frame = (now) => {
-    const t = (now - t0) % CYCLE;
-    let j;
-    // Respiration : le buste se soulève très légèrement
-    const breathe = (pose, amp = 1) => {
-      const phase = breath ? breath() : (Math.sin((now - t0) / 1600) + 1) / 2;
-      const o = { ...pose };
-      const lift = (phase - 0.5) * 2.4 * amp;
-      for (const k of ["H", "N", "E1", "E2"]) o[k] = [pose[k][0], pose[k][1] - lift];
-      return o;
-    };
-    if (mode === "tenue") { j = breathe(end, 1.2); setLabel(""); }
-    else if (t < T.debut) { j = start; setLabel("Départ"); }
-    else if (t < T.debut + T.entree) { j = mix(start, end, ease((t - T.debut) / T.entree)); setLabel("J'entre doucement"); }
-    else if (t < T.debut + T.entree + T.tenue) { j = breathe(end); setLabel("Je tiens et je respire"); }
-    else { j = mix(end, start, ease((t - T.debut - T.entree - T.tenue) / T.retour)); setLabel("Je sors en douceur"); }
-    draw(j);
+    const t = now - t0;
+    if (mode === "tenue") ch.render({ phase: "tenue", t, length: 0, breath: breath ? breath() : null });
+    else {
+      let r = t % total, ph = order[0];
+      for (const o of order) { if (r < D[o]) { ph = o; break; } r -= D[o]; }
+      ch.render({ phase: ph, t: r, length: ph === "tenue" ? 0 : D[ph] });
+    }
     raf = requestAnimationFrame(frame);
   };
   raf = requestAnimationFrame(frame);
-  // Pause automatique hors écran pour économiser la batterie
   const io = "IntersectionObserver" in window ? new IntersectionObserver(([e]) => {
     cancelAnimationFrame(raf);
     if (e.isIntersecting) raf = requestAnimationFrame(frame);

@@ -252,9 +252,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .pose-anim .zen-art { position: absolute; inset: 0; width: 100%; height: 100%; }
 .zen-art.no-figure .zen-figure { display: none; }
 .pose-figure { position: absolute; inset: 0; width: 100%; height: 100%; }
-.pose-figure .near { stroke: #fbf8f3; stroke-width: 6; }
-.pose-figure .far { stroke: #fbf8f3; stroke-width: 5; opacity: 0.55; }
-.pose-figure circle { fill: #fbf8f3; }
 .pose-shadow { fill: rgba(47, 42, 37, 0.12); }
 .pose-label { position: absolute; left: 12px; top: 10px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #fbf8f3; text-shadow: 0 1px 6px rgba(0,0,0,.18); }
 .pose-label:empty { display: none; }
@@ -281,3 +278,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .hero-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .card-art { height: 170px; }
 .dial > svg { position: relative; z-index: 2; pointer-events: none; }
+
+/* Personnage illustré dans le lecteur */
+.dial-visual .character .pose-figure { inset: 12% 8% 6%; width: 84%; height: 82%; }
+.character .pose-label { color: #fbf8f3; }
+.player.paused .dial::after { content: "En pause"; position: absolute; left: 50%; bottom: 13%; transform: translateX(-50%); z-index: 3; background: var(--glass-strong); color: var(--ink); padding: 5px 14px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.player.paused .breath-orb, .player.paused .dial-visual { transition: none; }
+.player .dial { position: relative; }

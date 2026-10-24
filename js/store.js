@@ -9,6 +9,7 @@ const defaults = {
   voix: { active: true, vitesse: 0.92, voiceURI: "" },
   souffle: { inspire: 4, expire: 6 },
   ia: { cle: "", modele: "claude-sonnet-5-5" },
+  lecteurVisuel: "personnage", // "personnage" | "photo"
 };
 
 function load() {

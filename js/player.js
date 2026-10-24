@@ -1,9 +1,9 @@
 // Lecteur de séance : installation guidée → tenue minutée avec souffle → sortie → posture suivante.
 // Deux modes : « statique » (Yin, minuteur long) et « flux » (styles dynamiques, compteur de respirations).
-import { state, matchedAdaptations } from "./store.js";
+import { state, save, matchedAdaptations } from "./store.js";
 import { speak, stopSpeaking, pauseSpeaking, resumeSpeaking } from "./tts.js";
 import { esc, fmt, icon, postureFigure } from "./ui.js";
-import { mountPoseAnimation } from "./animation.js";
+import { createCharacter } from "./animation.js";
 
 const ROOT = () => document.getElementById("player-root");
 const RING = 2 * Math.PI * 46;
@@ -61,7 +61,10 @@ class Session {
       <div class="player-top">
         <button class="icon-btn" data-act="close" aria-label="Fermer le lecteur">${icon("close")}</button>
         <span class="eyebrow">${esc(this.titre)}</span>
+        <div class="row" style="gap:6px">
+        <button class="icon-btn" data-act="visual" aria-label="Basculer personnage / photo" title="Personnage ou photo">${icon(state.lecteurVisuel === "photo" ? "person" : "image")}</button>
         <button class="icon-btn" data-act="voice" aria-label="Activer ou couper la voix">${icon(state.voix.active ? "voice" : "mute")}</button>
+        </div>
       </div>
       <div class="player-progress">${this.steps.map(() => "<span></span>").join("")}</div>
       <div class="player-main">
@@ -104,6 +107,14 @@ class Session {
       if (a === "toggle") this.togglePause();
       if (a === "next") this.skip();
       if (a === "prev") this.back();
+      if (a === "visual") {
+        state.lecteurVisuel = state.lecteurVisuel === "photo" ? "personnage" : "photo";
+        save();
+        b.innerHTML = icon(state.lecteurVisuel === "photo" ? "person" : "image");
+        this.refs.visual.dataset.key = "";
+        this.setVisual(this.phase === "fin" ? "sortie" : this.phase);
+        this.renderCharacter();
+      }
       if (a === "voice") {
         state.voix.active = !state.voix.active;
         b.innerHTML = icon(state.voix.active ? "voice" : "mute");
@@ -122,30 +133,41 @@ class Session {
     this.raf = requestAnimationFrame(this.loop);
   }
 
-  // Visuel au cœur du minuteur : animation d'entrée pendant l'installation,
-  // photo (ou, à défaut, silhouette qui respire) pendant la tenue et la sortie.
+  // Visuel au cœur du minuteur : le personnage illustré (par défaut), piloté image par image
+  // par le lecteur — il suit donc exactement les phases, le souffle et la pause — ou la photo du livre.
   setVisual(phase) {
     const { posture, cote } = this.step;
     const v = this.refs.visual;
     v.classList.toggle("mirror", cote === "gauche");
-    const wantsAnim = phase === "installation" || !posture.image;
-    const key = `${posture.id}:${wantsAnim ? phase === "installation" ? "entree" : "tenue" : "photo"}`;
+    const usePhoto = state.lecteurVisuel === "photo" && posture.image;
+    const key = `${posture.id}:${usePhoto ? "photo" : "perso"}`;
     if (v.dataset.key === key) return;
     v.dataset.key = key;
-    this.stopAnim?.();
-    this.stopAnim = null;
-    const holdAnim = () => (this.stopAnim = mountPoseAnimation(v, posture, { mode: "tenue", breath: () => this.breathPhase ?? 0.5 }));
-    if (phase === "installation") this.stopAnim = mountPoseAnimation(v, posture, { mode: "boucle" });
-    else if (!posture.image) holdAnim();
+    this.character = null;
+    const toCharacter = () => {
+      this.character = createCharacter(v, posture, { aspect: 1.05 });
+      this.renderCharacter();
+    };
+    if (!usePhoto) toCharacter();
     else {
       v.innerHTML = postureFigure(posture, { cls: "dial-art" });
-      // Photo introuvable : on bascule sur la silhouette animée
-      v.querySelector("img")?.addEventListener("error", () => { if (v.dataset.key === key) holdAnim(); }, { once: true });
+      // Photo introuvable : le personnage prend le relais
+      v.querySelector("img")?.addEventListener("error", () => { if (v.dataset.key === key) toCharacter(); }, { once: true });
     }
   }
 
+  renderCharacter() {
+    if (!this.character) return;
+    this.character.render({
+      phase: this.phase,
+      t: this.elapsed,
+      length: this.phase === "tenue" ? this.phaseLength : 0,
+      breath: this.phase === "tenue" ? this.breathEased : null,
+      inhale: this.phase === "tenue" ? this.inhaling : null,
+    });
+  }
+
   destroy() {
-    this.stopAnim?.();
     cancelAnimationFrame(this.raf);
     stopSpeaking();
     document.removeEventListener("keydown", this.onKey);
@@ -179,6 +201,7 @@ class Session {
     this.renderProgress();
     r.name.textContent = posture.nom;
     if (phase !== "fin") this.setVisual(phase);
+    this.renderCharacter();
     r.sub.textContent = posture.sanskrit + (cote ? ` · côté ${cote}` : "");
     const next = this.steps[this.index + 1];
     r.nextup.textContent = next ? `Ensuite : ${next.posture.nom}${next.cote ? " (côté " + next.cote + ")" : ""}` : "Dernière posture";
@@ -226,10 +249,11 @@ class Session {
     }
     if (phase === "fin") {
       r.phase.textContent = "Fin de séance";
-      this.stopAnim?.();
-      this.stopAnim = null;
-      r.visual.dataset.key = "";
-      r.visual.innerHTML = '<div class="dial-namaste">🙏</div>';
+      if (!this.character) {
+        r.visual.dataset.key = "";
+        r.visual.innerHTML = '<div class="dial-namaste">🙏</div>';
+      }
+      this.renderCharacter();
       r.name.textContent = "Namasté";
       r.sub.textContent = "Merci pour cette pratique";
       r.cue.textContent = "Garde quelques instants ce calme avec toi avant de reprendre tes activités.";
@@ -268,6 +292,7 @@ class Session {
     this.paused = !this.paused;
     const b = this.el.querySelector('[data-act="toggle"]');
     b.innerHTML = icon(this.paused ? "play" : "pause");
+    this.el.classList.toggle("paused", this.paused);
     if (this.paused) pauseSpeaking(); else resumeSpeaking();
   }
 
@@ -283,6 +308,11 @@ class Session {
   };
 
   update() {
+    this.updateTimer();
+    this.renderCharacter();
+  }
+
+  updateTimer() {
     const r = this.refs;
     if (this.phase === "tenue") {
       const total = this.phaseLength;
@@ -298,8 +328,11 @@ class Session {
       r.orb.style.transitionDuration = (inhale ? this.breathIn : this.breathOut) + "ms";
       r.orb.style.transform = `scale(${inhale ? 1 : 0.72})`;
       this.breathPhase = inhale ? t / this.breathIn : 1 - (t - this.breathIn) / this.breathOut;
+      this.breathEased = (1 - Math.cos(Math.PI * this.breathPhase)) / 2;
+      this.inhaling = inhale;
       r.visual.style.transitionDuration = r.orb.style.transitionDuration;
-      r.visual.style.transform = `scale(${inhale ? 1.035 : 0.965})`;
+      const amp = this.character ? 0.012 : 0.035;
+      r.visual.style.transform = `scale(${inhale ? 1 + amp : 1 - amp})`;
       if (posture.mode === "flux") {
         const n = Math.min(posture.respirations || 5, Math.floor(this.elapsed / cycle) + 1);
         r.time.classList.remove("word");
