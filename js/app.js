@@ -18,7 +18,7 @@ import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "13 · accueil 3 disciplines";
+export const APP_VERSION = "14 · roll-up";
 // Contrôle au démarrage : chaque étirement respecte le modèle (console du navigateur)
 verifierEtirements(POSTURES_ETIREMENTS, POSES);
 const view = document.getElementById("view");
@@ -72,7 +72,7 @@ export const DISCIPLINES = {
   },
   pilates: {
     titre: "Pilates", sous: "Contrôle du centre & mobilité de la colonne", emoji: "🦾",
-    accroche: "15 exercices au tapis, au rythme du souffle : inspire pour préparer, expire pour bouger.",
+    accroche: "16 exercices au tapis, au rythme du souffle : inspire pour préparer, expire pour bouger.",
     apercu: "pil-cygne-prep", teinte: "lavande",
   },
 };

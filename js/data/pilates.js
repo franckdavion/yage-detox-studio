@@ -1,4 +1,4 @@
-// Méthode « Pilates » — 15 exercices au tapis, au rythme du souffle.
+// Méthode « Pilates » — 16 exercices au tapis, au rythme du souffle.
 // Principe : on inspire pour préparer, on expire pour bouger. Le lecteur compte les répétitions
 // (une répétition = une respiration) et le personnage alterne entre la position de préparation
 // (inspiration) et la position de mouvement (expiration), avec des traînées de mouvement.
@@ -133,6 +133,29 @@ export const POSTURES_PILATES = [
     },
     personnage: { depart: "dosGenouxPlies", preparation: "pilDosMainsTete", mouvement: "pilEnroule" },
     adaptations: { nuque: "Garde la tête posée et engage seulement le ventre." },
+  }),
+  definePilates({
+    id: "pil-roll-up", nom: "Enroulé complet", nomEn: "Roll-Up",
+    famille: "Allongé, enroulement jusqu'à l'assise", categorie: "core", moments: ["milieu"], themes: ["energie", "souplesse"],
+    racines: "Jambes et bassin au sol", repetitions: 6, niveau: "intermediaire",
+    bienfaits: ["Renforce les abdominaux en profondeur", "Articule la colonne vertèbre par vertèbre", "Étire l'arrière des jambes et le dos"],
+    etapes: {
+      installation: [
+        "Allonge-toi sur le dos, jambes tendues et serrées, pieds fléchis.",
+        "Lève les bras vers le plafond, épaules basses.",
+      ],
+      souffle: { inspire: "Inspire, bras vers le ciel, et décolle la tête et les épaules.", expire: "Expire et enroule-toi jusqu'à l'assise, vertèbre par vertèbre, mains vers les pieds." },
+      reperes: ["Le ventre se creuse pendant l'enroulement", "Les jambes restent posées", "On déroule aussi lentement qu'on enroule"],
+      visualisation: "Ta colonne se déroule comme un tapis qu'on pose au sol, une vertèbre après l'autre.",
+      relachement: ["Déroule-toi lentement jusqu'au sol et relâche les bras le long du corps."],
+    },
+    personnage: { depart: "pilRollUpDos", preparation: "pilRollUpDos", mouvement: "flexionAvant" },
+    adaptations: {
+      debutant: "Plie les genoux et aide-toi en tenant l'arrière des cuisses.",
+      dos: "Fais seulement la moitié du mouvement, jusqu'aux omoplates.",
+    },
+    eviter: ["dos"],
+    precautions: ["À éviter en cas de hernie discale ou d'ostéoporose"],
   }),
   definePilates({
     id: "pil-etirement-jambe", nom: "Étirement de jambe isolée", nomEn: "Single Leg Stretch",
@@ -349,15 +372,15 @@ export const PROGRAMMES_PILATES = [
     titre: "Centre & dos forts",
     description: "Une séance tonique pour la ceinture abdominale et les muscles du dos.",
     theme: "energie",
-    postures: ["pil-abdos-prep", "pil-etirement-jambe", "pil-roulement-obliques", "pil-brasse-prep", "pil-cygne-prep", "pil-chat"],
+    postures: ["pil-abdos-prep", "pil-roll-up", "pil-etirement-jambe", "pil-roulement-obliques", "pil-brasse-prep", "pil-cygne-prep", "pil-chat"],
   },
   {
     id: "pil-complet",
-    titre: "Pilates complet · 15 exercices",
+    titre: "Pilates complet · 16 exercices",
     description: "Le programme complet, du réveil de la colonne à la sirène.",
     theme: "energie",
     postures: [
-      "pil-chat", "pil-abdos-prep", "pil-etirement-jambe", "pil-ciseaux", "pil-ballon", "pil-roulement-obliques",
+      "pil-chat", "pil-abdos-prep", "pil-roll-up", "pil-etirement-jambe", "pil-ciseaux", "pil-ballon", "pil-roulement-obliques",
       "pil-torsion-colonne", "pil-cercles-hanches", "pil-cote-rotation", "pil-flexion-laterale", "pil-nage-prep",
       "pil-brasse-prep", "pil-cygne-prep", "pil-pompes-prep", "pil-sirene",
     ],

@@ -34,7 +34,7 @@ Chaque étirement est déclaré avec le **modèle obligatoire** `defineEtirement
 
 ## Pilates (cinquième méthode)
 
-15 exercices de Pilates au sol (préparation des abdominaux, nage, ciseaux, cygne, sirène, ballon…) classés par catégorie : **Core**, **Mobilité**, **Force**, **Stabilité** (`js/data/pilates.js`, fonction `definePilates`). Le lecteur compte les répétitions et le personnage semi-3D alterne entre la position de préparation (inspiration) et le mouvement (expiration), avec des **traînées de mouvement** sur les mains, les pieds et la tête. Pendant la séance : bouton **♀ / ♂** pour changer d'avatar, **visualiseur d'onde** qui s'anime avec la voix et le souffle, consignes vocales synchronisées (« Inspire pour préparer, expire pour… »), barre de progression, lecture / pause / suivant. Programmes : « Pilates découverte », « Centre solide », « Pilates complet ».
+16 exercices de Pilates au sol (préparation des abdominaux, roll-up, nage, ciseaux, cygne, sirène, ballon…) classés par catégorie : **Core**, **Mobilité**, **Force**, **Stabilité** (`js/data/pilates.js`, fonction `definePilates`). Le lecteur compte les répétitions et le personnage semi-3D alterne entre la position de préparation (inspiration) et le mouvement (expiration), avec des **traînées de mouvement** sur les mains, les pieds et la tête. Pendant la séance : bouton **♀ / ♂** pour changer d'avatar, **visualiseur d'onde** qui s'anime avec la voix et le souffle, consignes vocales synchronisées (« Inspire pour préparer, expire pour… »), barre de progression, lecture / pause / suivant. Programmes : « Pilates découverte », « Centre & dos forts », « Pilates complet ».
 
 ## Phase 2 — Ingestion universelle (amorcée)
 
