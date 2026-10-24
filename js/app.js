@@ -1,6 +1,5 @@
 // Yoga Détox Studio — routeur et vues
 import { CONTRAINTES, MOMENTS, THEMES, PRINCIPES } from "./data/yin-yoga.js";
-import { ZONES } from "./data/etirements.js";
 import {
   state, save, books, allPostures, getPosture, allProgrammes,
   toggleContrainte, warningsFor, matchedAdaptations, inSeance, toggleSeance, BUILTIN_BOOKS,
@@ -8,12 +7,16 @@ import {
 } from "./store.js";
 import { esc, icon, toast, minutes, postureFigure, installImageFallbacks } from "./ui.js";
 import { openPlayer, closePlayer } from "./player.js";
-import { mountPoseAnimation, createCharacter } from "./animation.js";
+import { mountPoseAnimation, createCharacter, POSES } from "./animation.js";
+import { verifierEtirements } from "./data/modele-etirement.js";
+import { ZONES, POSTURES_ETIREMENTS } from "./data/etirements.js";
 import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "10 · étirements";
+export const APP_VERSION = "11 · modèle étirements";
+// Contrôle au démarrage : chaque étirement respecte le modèle (console du navigateur)
+verifierEtirements(POSTURES_ETIREMENTS, POSES);
 const view = document.getElementById("view");
 installImageFallbacks();
 const filters = { moment: "", theme: "", q: "", adapte: false, livre: "", zone: "" };
@@ -239,7 +242,9 @@ function renderPosture(id) {
   if (!p) { view.innerHTML = `<div class="empty glass section">Posture introuvable. <a href="#/">Retour</a></div>`; return; }
   const warn = warningsFor(p);
   const b = p.bienfaits || {};
-  const benef = [["Physiques", b.physiques], ["Mentaux", b.mentaux], ["Émotionnels", b.emotionnels], ["Énergétiques", b.energetiques]]
+  const benef = p.bienfaitsListe
+    ? `<ul>${p.bienfaitsListe.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`
+    : [["Physiques", b.physiques], ["Mentaux", b.mentaux], ["Émotionnels", b.emotionnels], ["Énergétiques", b.energetiques]]
     .filter(([, l]) => l?.length)
     .map(([t, l]) => `<div><span class="eyebrow">${t}</span><ul>${l.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`).join("");
   const adapts = Object.entries(p.adaptations || {});

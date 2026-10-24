@@ -124,7 +124,14 @@ const PAR_FAMILLE = [
   [/arrière/, ["ventre", "sphinx"]],
   [/avant/, ["assisJambesTendues", "flexionAvant"]],
 ];
+// Noms des poses disponibles pour le personnage (utilisés par le modèle d'étirement)
+export const POSES = Object.keys(P);
+
 export function posesFor(p) {
+  // Modèle d'étirement : les poses sont déclarées dans la fiche elle-même
+  if (p.personnage?.depart && P[p.personnage.depart] && P[p.personnage.posture]) {
+    return [p.personnage.depart, p.personnage.posture, p.personnage.expiration].filter(Boolean).map((k) => P[k]);
+  }
   const pair = PAR_POSTURE[p.id] || (p.chaise ? ["chaiseAssis", "chaiseBrasHaut"] : null) || PAR_FAMILLE.find(([re]) => re.test(`${p.famille || ""}`.toLowerCase()))?.[1] || ["assisJambesTendues", "assisTailleur"];
   return pair.map((k) => P[k]);
 }

@@ -233,7 +233,9 @@ class Session {
       this.phaseLength = this.holdMs();
       this.waitingVoice = false;
       r.cue.textContent = posture.optimisation?.[0] || "Respire lentement par le nez.";
-      this.speakSeq(["Reste ici. Relâche les muscles et laisse le souffle s'allonger."]);
+      // Texte de maintien du modèle (étirements) ou consigne générique
+      this.speakSeq([posture.tts?.maintien || "Reste ici. Relâche les muscles et laisse le souffle s'allonger."]);
+      if (posture.tts?.maintien) r.cue.textContent = posture.tts.maintien;
     }
     if (phase === "sortie") {
       r.phase.textContent = "Sortie";
