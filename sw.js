@@ -1,6 +1,6 @@
 // Service worker : permet d'ouvrir l'app et de pratiquer hors connexion.
 // Pense à changer VERSION à chaque mise à jour des fichiers pour rafraîchir le cache.
-const VERSION = "yds-v6";
+const VERSION = "yds-v7";
 const FILES = [
   "./",
   "index.html",
@@ -88,8 +88,10 @@ self.addEventListener("fetch", (e) => {
   // Ne jamais mettre en cache les appels à l'API IA
   if (url.hostname === "api.anthropic.com") return;
   // Réseau d'abord (pour recevoir les mises à jour), cache en secours hors ligne
+  // Même origine : on revalide toujours auprès du serveur (pas de copie périmée du cache HTTP)
+  const fresh = url.origin === location.origin ? new Request(req, { cache: "no-cache" }) : req;
   e.respondWith(
-    fetch(req)
+    fetch(fresh)
       .then((res) => {
         if (res.ok && (url.origin === location.origin || url.hostname.includes("fonts.g"))) {
           const copy = res.clone();

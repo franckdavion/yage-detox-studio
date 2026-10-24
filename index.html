@@ -66,7 +66,17 @@
   <script type="module" src="js/app.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+      addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
+          .then((reg) => reg.update())
+          .catch(() => {});
+      });
+      // Nouvelle version installée : on recharge une fois pour l'afficher tout de suite
+      let reloaded = false;
+      const hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (hadController && !reloaded) { reloaded = true; location.reload(); }
+      });
     }
   </script>
 </body>

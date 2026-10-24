@@ -11,6 +11,7 @@ import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
+export const APP_VERSION = "7 · yoga sur chaise";
 const view = document.getElementById("view");
 installImageFallbacks();
 const filters = { moment: "", theme: "", q: "", adapte: false, livre: "" };
@@ -88,6 +89,22 @@ function renderCatalogue() {
     </section>
 
     <section class="section">
+      <div class="section-head"><h2>Mes méthodes</h2></div>
+      <div class="methods">
+        ${bookList.map((b) => `<button class="method glass ${filters.livre === b.id ? "on" : ""}" data-method="${esc(b.id)}">
+          <span class="method-icon">${b.style === "chaise" ? "🪑" : b.style === "yin" ? "🌙" : "📖"}</span>
+          <span class="method-txt"><strong>${esc(b.titre)}</strong>
+            <span class="muted">${b.postures.length} fiches · ${b.mode === "flux" ? "au rythme du souffle" : "tenues longues"}</span></span>
+          ${b.id === "yoga-chaise" ? '<span class="tag ok">Nouveau</span>' : ""}
+        </button>`).join("")}
+      </div>
+      ${bookList.some((b) => b.id === "yoga-chaise") ? `<div class="row" style="margin-top:12px">
+        <button class="btn terra small" data-play-prog="chaise-complete">${icon("play")} Pause yoga sur chaise</button>
+        <button class="btn ghost small" data-play-prog="chaise-express">Nuque & épaules · 5 min</button>
+      </div>` : ""}
+    </section>
+
+    <section class="section">
       <input class="search" type="search" placeholder="Rechercher une posture, un bienfait, un méridien…" value="${esc(filters.q)}" id="q" />
       <div class="filters" style="margin-top:12px">
         ${chip("moment", "", "Tous les moments", !filters.moment)}
@@ -114,6 +131,13 @@ function renderCatalogue() {
 }
 
 function onCatalogueClick(e) {
+  const m = e.target.closest("[data-method]");
+  if (m) {
+    filters.livre = filters.livre === m.dataset.method ? "" : m.dataset.method;
+    renderCatalogue();
+    document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
   const f = e.target.closest("[data-filter]");
   if (f) {
     filters[f.dataset.filter] = f.dataset.value;
@@ -459,6 +483,7 @@ function renderProfil() {
     </section>
     <section class="section glass panel">
       <h2>Données</h2>
+      <p class="muted" style="font-size:.85rem;margin-bottom:10px">Version de l'application : ${APP_VERSION}</p>
       <div class="row"><button class="btn ghost small" id="export">Exporter ma bibliothèque (JSON)</button></div>
     </section>`;
 

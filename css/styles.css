@@ -286,3 +286,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .player.paused .breath-orb, .player.paused .dial-visual { transition: none; }
 .player .dial { position: relative; }
 .hero-switch[hidden] { display: none; }
+
+/* Méthodes (livres) sur l'accueil */
+.methods { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.method { display: flex; align-items: center; gap: 14px; padding: 16px; text-align: left; border: 1px solid var(--glass-border); }
+.method.on { outline: 2px solid var(--sage-deep); }
+.method-icon { font-size: 1.8rem; width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: color-mix(in srgb, var(--sand) 70%, transparent); flex: none; }
+.method-txt { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.method-txt strong { font-family: var(--serif); font-size: 1.25rem; font-weight: 500; }
+.method-txt .muted { font-size: 0.82rem; }
