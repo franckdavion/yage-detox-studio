@@ -68,6 +68,7 @@ const FIGURES = {
 function categorie(p) {
   if (p.chaise) return "chaise";
   if (p.yeux) return "yeux";
+  if (p.etirement && /debout/.test((p.famille || "").toLowerCase())) return "debout";
   const f = `${p.famille || ""} ${p.nom || ""}`.toLowerCase();
   if (/inversion|mur/.test(f)) return "inversion";
   if (/torsion/.test(f)) return "torsion";

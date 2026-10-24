@@ -44,6 +44,19 @@ const P = {
   chaiseTorsion: { H: [124, 50], N: [126, 68], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [112, 88], W1: [104, 108], E2: [140, 90], W2: [158, 104] },
   chaiseSciatique: { H: [140, 54], N: [134, 70], P: [124, 106], K1: [154, 94], F1: [164, 110], K2: [160, 110], F2: [164, 157], E1: [148, 90], W1: [154, 96], E2: [146, 94], W2: [162, 108] },
   chaiseRelax: { H: [164, 128], N: [154, 104], P: [122, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [162, 128], W1: [164, 152], E2: [160, 130], W2: [162, 154] },
+  // --- Étirements (debout et allongé) ---
+  quadriceps: { H: [158, 38], N: [158, 56], P: [160, 106], K1: [164, 134], F1: [142, 110], K2: [162, 132], F2: [164, 158], E1: [150, 84], W1: [143, 108], E2: [174, 70], W2: [192, 66] },
+  mollet: { H: [196, 50], N: [184, 64], P: [150, 106], K1: [128, 132], F1: [104, 158], K2: [178, 128], F2: [180, 158], E1: [202, 62], W1: [218, 56], E2: [200, 66], W2: [216, 60] },
+  brasCroise: { H: [160, 38], N: [160, 56], P: [160, 106], K1: [160, 132], F1: [160, 158], K2: [164, 132], F2: [166, 158], E1: [180, 58], W1: [198, 58], E2: [170, 72], W2: [182, 60] },
+  triceps: { H: [162, 38], N: [160, 56], P: [160, 106], K1: [160, 132], F1: [160, 158], K2: [164, 132], F2: [166, 158], E1: [166, 20], W1: [150, 44], E2: [176, 42], W2: [168, 22] },
+  pectoraux: { H: [168, 38], N: [164, 56], P: [160, 106], K1: [160, 132], F1: [160, 158], K2: [164, 132], F2: [166, 158], E1: [148, 82], W1: [138, 104], E2: [150, 84], W2: [140, 106] },
+  genouxPoitrine: { H: [78, 150], N: [96, 152], P: [162, 152], K1: [150, 118], F1: [176, 128], K2: [154, 120], F2: [180, 130], E1: [124, 134], W1: [150, 116], E2: [126, 136], W2: [154, 118] },
+  jambeCiel: { H: [78, 150], N: [96, 152], P: [162, 152], K1: [166, 110], F1: [170, 66], K2: [202, 154], F2: [242, 154], E1: [120, 130], W1: [140, 112], E2: [122, 132], W2: [142, 114] },
+  figure4: { H: [78, 150], N: [96, 152], P: [162, 152], K1: [176, 106], F1: [160, 120], K2: [160, 116], F2: [186, 124], E1: [128, 128], W1: [158, 118], E2: [130, 130], W2: [160, 120] },
+  fenteBasse: { H: [170, 52], N: [166, 70], P: [154, 128], K1: [118, 156], F1: [80, 157], K2: [196, 122], F2: [198, 157], E1: [180, 100], W1: [194, 118], E2: [182, 102], W2: [196, 120] },
+  enfantBras: { H: [198, 150], N: [178, 146], P: [112, 138], K1: [150, 156], F1: [96, 157], K2: [154, 156], F2: [100, 157], E1: [214, 152], W1: [240, 155], E2: [216, 153], W2: [242, 156] },
+  dosCreux: { H: [216, 94], N: [196, 112], P: [122, 110], K1: [122, 156], F1: [84, 157], K2: [126, 156], F2: [88, 157], E1: [196, 134], W1: [196, 156], E2: [200, 134], W2: [200, 156] },
+  dosRond: { H: [204, 126], N: [194, 104], P: [124, 108], K1: [122, 156], F1: [84, 157], K2: [126, 156], F2: [88, 157], E1: [196, 132], W1: [196, 156], E2: [200, 132], W2: [200, 156] },
   banane: { H: [70, 138], N: [92, 146], P: [162, 152], K1: [200, 148], F1: [238, 140], K2: [202, 150], F2: [240, 142], E1: [70, 120], W1: [52, 108], E2: [74, 122], W2: [56, 110] },
 };
 
@@ -74,6 +87,21 @@ const PAR_POSTURE = {
   cloche: ["debout", "cloche"],
   "torsion-dos": ["dosGenouxPlies", "torsion"],
   "chat-queue": ["dosGenouxPlies", "torsion"],
+  // Étirements
+  "etir-chat-vache": ["quatrePattes", "dosCreux", "dosRond"],
+  "etir-genoux-poitrine": ["dosGenouxPlies", "genouxPoitrine"],
+  "etir-torsion-allongee": ["dosGenouxPlies", "torsion"],
+  "etir-enfant-bras": ["quatrePattes", "enfantBras"],
+  "etir-ischios-assis": ["assisJambesTendues", "flexionAvant"],
+  "etir-quadriceps": ["debout", "quadriceps"],
+  "etir-mollets": ["debout", "mollet"],
+  "etir-jambe-ciel": ["dosAllonge", "jambeCiel"],
+  "etir-fente-basse": ["quatrePattes", "fenteBasse"],
+  "etir-figure-quatre": ["dosGenouxPlies", "figure4"],
+  "etir-papillon": ["assisTailleur", "papillon"],
+  "etir-epaule-croisee": ["debout", "brasCroise"],
+  "etir-triceps": ["debout", "triceps"],
+  "etir-pectoraux": ["debout", "pectoraux"],
   // Chaise : [départ, posture, posture à l'expiration (facultatif, pour les mouvements rythmés)]
   "chaise-assise": ["chaiseAssis", "chaiseAssis"],
   "chaise-ouverture-bras": ["chaiseAssis", "chaiseBrasHaut", "chaiseMainsCoeur"],
@@ -125,6 +153,7 @@ const seg = (...pts) => "M" + pts.map((q) => `${f1(q[0])} ${f1(q[1])}`).join("L"
 
 // Crée le personnage dans `el` et renvoie un contrôleur piloté de l'extérieur (par le lecteur)
 // ou par sa propre horloge (fiche). Rien ne bouge tant que render() n'est pas appelé : la pause est naturelle.
+let uid3d = 0;
 export function createCharacter(el, posture, { background = true, aspect = 1.5 } = {}) {
   // Yoga des yeux : visage de face dont le regard suit l'exercice
   if (posture.yeux) return createEyeGuide(el, posture, { background });
@@ -134,41 +163,68 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
   for (const k in end) deep[k] = [...end[k]];
   for (const k of ["H", "N", "E1", "E2", "W1", "W2"]) deep[k] = [end[k][0] + (end.H[0] > end.P[0] ? 3 : -3) * (k === "H" ? 1 : 0.6), end[k][1] + 3.5];
 
+  const s3d = !!posture.etirement; // rendu semi-3D (volumes, reflets, ombre portée)
+  const gid = "c" + (++uid3d);
+  const hl = (name, w) => (s3d ? `<path data-k="${name}H" stroke="#fff" stroke-opacity=".32" stroke-width="${w}" transform="translate(-1.3 -1.7)"/>` : "");
+  const paint = (flat, grad) => (s3d ? `url(#${gid}${grad})` : flat);
   el.innerHTML = `
-    <div class="pose-anim character">
+    <div class="pose-anim character${s3d ? " s3d" : ""}">
       ${background ? zenIllustration({ ...posture, famille: "__aucune__" }).replace('class="zen-art"', 'class="zen-art no-figure"') : ""}
       <svg class="pose-figure" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Personnage illustrant ${posture.nom}">
+        ${s3d ? `<defs>
+          <filter id="${gid}ds" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="1.6" dy="3" stdDeviation="2.2" flood-color="#3d2f26" flood-opacity=".28"/></filter>
+          <filter id="${gid}blur"><feGaussianBlur stdDeviation="4"/></filter>
+          <linearGradient id="${gid}haut" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0a688"/><stop offset="1" stop-color="#ae6f52"/></linearGradient>
+          <linearGradient id="${gid}leg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9aab8a"/><stop offset="1" stop-color="#617256"/></linearGradient>
+          <linearGradient id="${gid}leg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7f9070"/><stop offset="1" stop-color="#55654b"/></linearGradient>
+          <linearGradient id="${gid}peau" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7e0d0"/><stop offset="1" stop-color="#dcb39a"/></linearGradient>
+          <linearGradient id="${gid}peau2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8c6b0"/><stop offset="1" stop-color="#c99f86"/></linearGradient>
+          <radialGradient id="${gid}tete" cx=".36" cy=".32" r=".75"><stop offset="0" stop-color="#fbe7da"/><stop offset="1" stop-color="#ddb39b"/></radialGradient>
+          <radialGradient id="${gid}cheveux" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#6b5446"/><stop offset="1" stop-color="#3a2c24"/></radialGradient>
+          <radialGradient id="${gid}hanche" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#9aab8a"/><stop offset="1" stop-color="#5c6c51"/></radialGradient>
+          <linearGradient id="${gid}mur" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#efe6da"/><stop offset="1" stop-color="#d8cbbb"/></linearGradient>
+        </defs>` : ""}
         <circle data-k="aura" r="40" fill="#fbf8f3" opacity=".25"/>
+        ${s3d ? `<ellipse data-k="shadow" ry="5" fill="#2f2a25" opacity=".22" filter="url(#${gid}blur)"/>` : ""}
+        ${s3d && posture.accessoire === "mur" ? `<rect x="224" y="12" width="14" height="148" rx="3" fill="url(#${gid}mur)"/><rect x="224" y="12" width="3" height="148" fill="#fff" opacity=".35"/>` : ""}
         <rect data-k="mat" rx="2.5" height="5" fill="${C.tapis}" opacity=".35"/>
+        ${s3d ? `<rect data-k="matTop" rx="2.5" height="3" fill="#b5c4a5" opacity=".7"/>` : ""}
         ${posture.chaise ? `<g class="chair" stroke-linecap="round" stroke-linejoin="round">
           <path d="M100 116L94 158M140 116L146 158M106 116L110 152" stroke="#a8927c" stroke-width="3.5" fill="none"/>
           <path d="M96 111q-6-30-2-58q2-6 8-5q5 1 5 7q-3 28 2 56z" fill="#e7ddd0" stroke="#cbbba8" stroke-width="1.5"/>
           <rect x="94" y="109" width="54" height="8" rx="4" fill="#e7ddd0" stroke="#cbbba8" stroke-width="1.5"/>
         </g>` : ""}
+        <g ${s3d ? `filter="url(#${gid}ds)"` : ""}>
         <g stroke-linecap="round" stroke-linejoin="round" fill="none">
-          <path data-k="leg2" stroke="${C.leggingOmbre}" stroke-width="11"/>
-          <path data-k="arm2" stroke="${C.peauOmbre}" stroke-width="7"/>
-          <circle data-k="foot2" r="4.2" fill="${C.peauOmbre}" stroke="none"/>
-          <circle data-k="hand2" r="3.6" fill="${C.peauOmbre}" stroke="none"/>
-          <path data-k="torso" stroke="${C.haut}" stroke-width="17"/>
-          <circle data-k="hips" r="9" fill="${C.legging}" stroke="none"/>
-          <path data-k="leg1" stroke="${C.legging}" stroke-width="11.5"/>
-          <circle data-k="foot1" r="4.4" fill="${C.peau}" stroke="none"/>
-          <path data-k="neck" stroke="${C.peau}" stroke-width="6"/>
-          <path data-k="arm1" stroke="${C.peau}" stroke-width="7.5"/>
-          <circle data-k="hand1" r="3.8" fill="${C.peau}" stroke="none"/>
+          <path data-k="leg2" stroke="${paint(C.leggingOmbre, "leg2")}" stroke-width="11"/>
+          <path data-k="arm2" stroke="${paint(C.peauOmbre, "peau2")}" stroke-width="7"/>
+          <circle data-k="foot2" r="4.2" fill="${paint(C.peauOmbre, "peau2")}" stroke="none"/>
+          <circle data-k="hand2" r="3.6" fill="${paint(C.peauOmbre, "peau2")}" stroke="none"/>
+          <path data-k="torso" stroke="${paint(C.haut, "haut")}" stroke-width="17"/>
+          ${hl("torso", 5)}
+          <circle data-k="hips" r="9" fill="${paint(C.legging, "hanche")}" stroke="none"/>
+          <path data-k="leg1" stroke="${paint(C.legging, "leg")}" stroke-width="11.5"/>
+          ${hl("leg1", 3.5)}
+          <circle data-k="foot1" r="4.4" fill="${paint(C.peau, "peau")}" stroke="none"/>
+          <path data-k="neck" stroke="${paint(C.peau, "peau")}" stroke-width="6"/>
+          <path data-k="arm1" stroke="${paint(C.peau, "peau")}" stroke-width="7.5"/>
+          ${hl("arm1", 2.4)}
+          <circle data-k="hand1" r="3.8" fill="${paint(C.peau, "peau")}" stroke="none"/>
+          ${posture.accessoire === "sangle" ? `<path data-k="strap" stroke="#c98b6b" stroke-width="2.4" fill="none"/>` : ""}
         </g>
-        <circle data-k="bun" r="6" fill="${C.cheveux}"/>
-        <circle data-k="hair" r="12" fill="${C.cheveux}"/>
-        <circle data-k="head" r="10.5" fill="${C.peau}"/>
+        <circle data-k="bun" r="6" fill="${paint(C.cheveux, "cheveux")}"/>
+        <circle data-k="hair" r="12" fill="${paint(C.cheveux, "cheveux")}"/>
+        <circle data-k="head" r="10.5" fill="${paint(C.peau, "tete")}"/>
+        ${s3d ? `<circle data-k="headHL" r="3.2" fill="#fff" opacity=".35"/>` : ""}
         <circle data-k="cheek" r="2.6" fill="${C.joue}" opacity=".55"/>
         <path data-k="eye" stroke="${C.cheveux}" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        </g>
       </svg>
       <span class="pose-label" data-k="label"></span>
     </div>`;
   const svg = el.querySelector(".pose-figure");
   // Cadrage automatique
-  const pts = [...Object.values(start), ...Object.values(end), ...(exhalePose ? Object.values(exhalePose) : []), ...(posture.chaise ? [[92, 48], [148, 158]] : [])];
+  const pts = [...Object.values(start), ...Object.values(end), ...(exhalePose ? Object.values(exhalePose) : []), ...(posture.chaise ? [[92, 48], [148, 158]] : []), ...(posture.accessoire === "mur" ? [[240, 30]] : [])];
   const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
   const x0 = Math.min(...xs) - 26, x1 = Math.max(...xs) + 26, y0 = Math.min(...ys) - 28, y1 = 168;
   let w = Math.max(x1 - x0, 130), h = Math.max(y1 - y0, 90);
@@ -178,6 +234,7 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
   const k = Object.fromEntries([...svg.querySelectorAll("[data-k]")].map((n) => [n.dataset.k, n]));
   const label = el.querySelector('[data-k="label"]');
   k.mat.setAttribute("x", f1(x0 + 6)); k.mat.setAttribute("y", "158.5"); k.mat.setAttribute("width", f1(x1 - x0 - 12));
+  if (k.matTop) { k.matTop.setAttribute("x", f1(x0 + 6)); k.matTop.setAttribute("y", "157.5"); k.matTop.setAttribute("width", f1(x1 - x0 - 12)); }
   let lastLabel = null;
 
   function draw(j, { breath = 0.5, blink = false, aura = 0.25 } = {}) {
@@ -195,6 +252,16 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
     k.leg2.setAttribute("d", seg(j.P, j.K2, j.F2));
     k.arm1.setAttribute("d", seg(j.N, j.E1, j.W1));
     k.arm2.setAttribute("d", seg(j.N, j.E2, j.W2));
+    if (s3d) {
+      for (const n of ["torso", "leg1", "arm1"]) k[n + "H"].setAttribute("d", k[n].getAttribute("d"));
+      // Ombre portée au sol : suit le centre du corps
+      const xsj = Object.values(j).map((q) => q[0]);
+      const minX = Math.min(...xsj), maxX = Math.max(...xsj);
+      k.shadow.setAttribute("cx", f1((minX + maxX) / 2));
+      k.shadow.setAttribute("cy", "160");
+      k.shadow.setAttribute("rx", f1((maxX - minX) / 2 + 8));
+    }
+    if (k.strap) k.strap.setAttribute("d", `M${f1(j.W1[0])} ${f1(j.W1[1])}L${f1(j.F1[0])} ${f1(j.F1[1] - 2)}L${f1(j.W2[0])} ${f1(j.W2[1])}`);
     const at = (n, q) => { n.setAttribute("cx", f1(q[0])); n.setAttribute("cy", f1(q[1])); };
     at(k.hips, j.P); at(k.foot1, j.F1); at(k.foot2, j.F2); at(k.hand1, j.W1); at(k.hand2, j.W2); at(k.head, j.H);
     // Orientation du visage : perpendiculaire au cou, du côté des jambes
@@ -206,6 +273,7 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
     // Cheveux : disque légèrement décalé vers l'arrière, le visage le recouvre en croissant
     at(k.hair, [j.H[0] - face[0] * 2.6 - hd[0] * 1.2, j.H[1] - face[1] * 2.6 - hd[1] * 1.2]);
     at(k.head, [j.H[0] + face[0] * 1.6, j.H[1] + face[1] * 1.6]);
+    if (k.headHL) at(k.headHL, [j.H[0] + face[0] * 1.6 - 3.5, j.H[1] + face[1] * 1.6 - 4]);
     // Visage : œil fermé (sérénité) ; clignement = trait plus fin
     const eye = [j.H[0] + face[0] * 6 + hd[0] * 2, j.H[1] + face[1] * 6 + hd[1] * 2];
     const side = [-hd[0] * 2.6, -hd[1] * 2.6];

@@ -20,6 +20,10 @@ Séquence de 11 fiches (mise en condition + 10 postures) inspirée du *Petit gui
 
 19 fiches contre la fatigue oculaire (palming, gym des yeux, mise au point, papillon, massage de l'orbite…) d'après la fiche *Exercices contre la fatigue des yeux* (Académie d'Aix-Marseille) ; consignes reformulées, images non reproduites. Un **visage guide** de face (`js/eyes.js`) anime le regard, les paupières et les mains selon chaque exercice, piloté image par image par le lecteur (pause comprise). Le lecteur compte des répétitions à cadence fixe. Programmes : « Yeux reposés · 5 min », « Pause écran · 2 min », « Gym des yeux complète ».
 
+## Étirements (quatrième méthode)
+
+14 étirements fondamentaux classés par zone (dos, jambes, hanches, haut du corps), avec étapes, repères, adaptations, bienfaits et précautions (`js/data/etirements.js`). Le personnage passe en **rendu semi-3D** (dégradés de volume, reflets, ombre portée, tapis en relief, accessoires mur et sangle) et suit les phases installation → respiration et maintien → relâchement, piloté par le lecteur avec guidage vocal. Filtre par zone dans la bibliothèque, générateur qui équilibre les zones. Programmes : « Réveil en douceur », « Dos libéré », « Étirements complets ».
+
 ## Phase 2 — Ingestion universelle (amorcée)
 
 L'onglet **Importer** envoie un PDF ou des photos à l'API Claude (vision). L'IA détecte le style et extrait les postures au même format que la base Yin. Le lecteur s'adapte :

@@ -330,3 +330,4 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .saved-chip { display: inline-flex; align-items: center; gap: 6px; }
 .saved-chip svg { width: 12px; height: 12px; }
 .dial-visual .eye-guide .pose-figure { inset: 4% 4% 0; width: 92%; height: 96%; }
+.card-art .pose-label { display: none; }

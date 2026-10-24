@@ -2,6 +2,7 @@
 import { POSTURES, PROGRAMMES, LIVRE } from "./data/yin-yoga.js";
 import { LIVRE_CHAISE, POSTURES_CHAISE, PROGRAMMES_CHAISE } from "./data/chaise.js";
 import { LIVRE_YEUX, POSTURES_YEUX, PROGRAMMES_YEUX } from "./data/yeux.js";
+import { LIVRE_ETIREMENTS, POSTURES_ETIREMENTS, PROGRAMMES_ETIREMENTS } from "./data/etirements.js";
 
 const KEY = "yds.state.v1";
 const defaults = {
@@ -39,8 +40,9 @@ export function save() {
 const baseBook = { ...LIVRE, mode: "statique", postures: POSTURES };
 const chaiseBook = { ...LIVRE_CHAISE, postures: POSTURES_CHAISE };
 const yeuxBook = { ...LIVRE_YEUX, postures: POSTURES_YEUX };
+const etirementsBook = { ...LIVRE_ETIREMENTS, postures: POSTURES_ETIREMENTS };
 // Livres intégrés à l'application (non supprimables) + livres importés
-export const BUILTIN_BOOKS = [baseBook, chaiseBook, yeuxBook];
+export const BUILTIN_BOOKS = [baseBook, chaiseBook, yeuxBook, etirementsBook];
 
 export function books() {
   return [...BUILTIN_BOOKS, ...state.livres];
@@ -58,7 +60,7 @@ export function getPosture(id) {
 
 export function allProgrammes() {
   const imported = state.livres.flatMap((b) => b.programmes || []);
-  return [...PROGRAMMES, ...PROGRAMMES_CHAISE, ...PROGRAMMES_YEUX, ...imported];
+  return [...PROGRAMMES, ...PROGRAMMES_CHAISE, ...PROGRAMMES_YEUX, ...PROGRAMMES_ETIREMENTS, ...imported];
 }
 
 // --- Profil d'adaptabilité ---
