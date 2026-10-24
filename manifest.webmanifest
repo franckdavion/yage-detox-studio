@@ -1,0 +1,10 @@
+{
+  "name": "Yoga Détox Studio",
+  "short_name": "Yoga Détox",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#efe6da",
+  "theme_color": "#5f6f53",
+  "lang": "fr",
+  "icons": [{ "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
