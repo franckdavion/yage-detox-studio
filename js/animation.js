@@ -56,6 +56,8 @@ const P = {
   mollet: { H: [196, 50], N: [184, 64], P: [150, 106], K1: [128, 132], F1: [104, 158], K2: [178, 128], F2: [180, 158], E1: [202, 62], W1: [218, 56], E2: [200, 66], W2: [216, 60] },
   brasCroise: { H: [160, 38], N: [160, 56], P: [160, 106], K1: [160, 132], F1: [160, 158], K2: [164, 132], F2: [166, 158], E1: [180, 58], W1: [198, 58], E2: [170, 72], W2: [182, 60] },
   triceps: { H: [162, 38], N: [160, 56], P: [160, 106], K1: [160, 132], F1: [160, 158], K2: [164, 132], F2: [166, 158], E1: [166, 20], W1: [150, 44], E2: [176, 42], W2: [168, 22] },
+  cobra: { H: [212, 86], N: [198, 104], P: [140, 152], K1: [100, 155], F1: [60, 155], K2: [102, 156], F2: [62, 156], E1: [190, 130], W1: [202, 157], E2: [192, 131], W2: [204, 157] },
+  nuqueLaterale: { H: [166, 72], N: [160, 90], P: [160, 144], K1: [196, 146], F1: [168, 156], K2: [126, 146], F2: [154, 156], E1: [178, 72], W1: [170, 62], E2: [150, 116], W2: [140, 140] },
   pectoraux: { H: [168, 38], N: [164, 56], P: [160, 106], K1: [160, 132], F1: [160, 158], K2: [164, 132], F2: [166, 158], E1: [148, 82], W1: [138, 104], E2: [150, 84], W2: [140, 106] },
   genouxPoitrine: { H: [78, 150], N: [96, 152], P: [162, 152], K1: [150, 118], F1: [176, 128], K2: [154, 120], F2: [180, 130], E1: [124, 134], W1: [150, 116], E2: [126, 136], W2: [154, 118] },
   jambeCiel: { H: [78, 150], N: [96, 152], P: [162, 152], K1: [166, 110], F1: [170, 66], K2: [202, 154], F2: [242, 154], E1: [120, 130], W1: [140, 112], E2: [122, 132], W2: [142, 114] },
@@ -210,7 +212,7 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
   for (const k in end) deep[k] = [...end[k]];
   for (const k of ["H", "N", "E1", "E2", "W1", "W2"]) deep[k] = [end[k][0] + (end.H[0] > end.P[0] ? 3 : -3) * (k === "H" ? 1 : 0.6), end[k][1] + 3.5];
 
-  const s3d = !!(posture.etirement || posture.pilates); // rendu semi-3D (volumes, reflets, ombre portée)
+  const s3d = true; // rendu semi-3D (volumes, reflets, ombre portée) pour toutes les disciplines
   const AV = AVATARS[state.avatar] || AVATARS.femme;
   const gid = "c" + (++uid3d);
   const hl = (name, w) => (s3d ? `<path data-k="${name}H" stroke="#fff" stroke-opacity=".32" stroke-width="${w}" transform="translate(-1.3 -1.7)"/>` : "");

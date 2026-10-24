@@ -41,7 +41,7 @@ Facultatif : `adaptations` (clés `genoux`, `dos`, `hanches`, `epaules`, `chevil
 Poses disponibles : assisJambesTendues, assisTailleur, flexionAvant, papillon, quatrePattes, enfant, coeurFondant, ventre,
 sphinx, dosGenouxPlies, dosAllonge, dosPapillon, torsion, jambesMur, escargot, bebeHeureux, debout, cloche, squat, lezard,
 pigeon, grenouille, diamant, heros, quadriceps, mollet, brasCroise, triceps, pectoraux, genouxPoitrine, jambeCiel, figure4,
-fenteBasse, enfantBras, dosCreux, dosRond, banane (+ poses chaise : chaiseAssis, chaiseBrasHaut…).
+fenteBasse, enfantBras, dosCreux, dosRond, banane, cobra, nuqueLaterale (+ poses chaise : chaiseAssis, chaiseBrasHaut…).
 
 ### Exemple minimal
 

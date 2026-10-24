@@ -18,18 +18,19 @@ import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "12 · pilates";
+export const APP_VERSION = "13 · accueil 3 disciplines";
 // Contrôle au démarrage : chaque étirement respecte le modèle (console du navigateur)
 verifierEtirements(POSTURES_ETIREMENTS, POSES);
 const view = document.getElementById("view");
 installImageFallbacks();
-const filters = { moment: "", theme: "", q: "", adapte: false, livre: "", zone: "" };
+const filters = { discipline: "", moment: "", theme: "", q: "", adapte: false, livre: "", zone: "" };
 const label = (id) => CONTRAINTES.find((c) => c.id === id)?.label || id;
 const NIVEAUX = { debutant: "Débutant", intermediaire: "Intermédiaire", avance: "Avancé" };
 
 // ---------- Routeur ----------
 const routes = [
-  [/^#?\/?$/, renderCatalogue, "catalogue"],
+  [/^#?\/?$/, renderHub, "catalogue"],
+  [/^#\/(yoga|etirements|pilates)$/, renderCatalogue, "catalogue"],
   [/^#\/posture\/(.+)$/, renderPosture, "catalogue"],
   [/^#\/seances$/, renderSeances, "seances"],
   [/^#\/mes-seances$/, renderMesSeances, "mes-seances"],
@@ -52,11 +53,76 @@ function router() {
       return;
     }
   }
-  renderCatalogue();
+  renderHub();
 }
 window.addEventListener("hashchange", router);
 
-// ---------- Catalogue ----------
+// ---------- Disciplines : Yoga, Étirements, Pilates ----------
+// Chaque livre (et donc chaque posture, via p.livre) appartient à une seule discipline.
+export const DISCIPLINES = {
+  yoga: {
+    titre: "Yoga", sous: "Sérénité & flux", emoji: "🧘",
+    accroche: "Yin, yoga sur chaise et yoga des yeux : ralentir, respirer, se déposer.",
+    apercu: "papillon", teinte: "sage",
+  },
+  etirements: {
+    titre: "Étirements", sous: "Mobilité & récupération", emoji: "🧘‍♂️",
+    accroche: "Des étirements par zone pour délier le corps, au réveil ou après l'effort.",
+    apercu: "etir-fente-basse", teinte: "terra",
+  },
+  pilates: {
+    titre: "Pilates", sous: "Contrôle du centre & mobilité de la colonne", emoji: "🦾",
+    accroche: "15 exercices au tapis, au rythme du souffle : inspire pour préparer, expire pour bouger.",
+    apercu: "pil-cygne-prep", teinte: "lavande",
+  },
+};
+const disciplineOfBook = (id) => (id === "etirements" ? "etirements" : id === "pilates" ? "pilates" : "yoga");
+export const disciplineOf = (p) => disciplineOfBook(p?.livre);
+const booksOf = (d) => books().filter((b) => disciplineOfBook(b.id) === d);
+const programmesOf = (d) => allProgrammes().filter((pr) => disciplineOf(getPosture(pr.postures[0])) === d);
+const ICON_LIVRE = { yin: "🌙", chaise: "🪑", yeux: "👁️" };
+
+// ---------- Accueil : choix de la discipline ----------
+function renderHub() {
+  const hour = new Date().getHours();
+  const hello = hour < 12 ? "Bonjour" : hour < 18 ? "Bel après-midi" : "Bonsoir";
+  view.innerHTML = `
+    <section class="hub-head">
+      <span class="eyebrow">${hello}</span>
+      <h1>Que veux-tu pratiquer ?</h1>
+      <p class="muted">Choisis une discipline : sa bibliothèque et ses séances guidées s'ouvrent.</p>
+    </section>
+    <section class="disc-grid">
+      ${Object.entries(DISCIPLINES).map(([id, d]) => {
+        const n = booksOf(id).reduce((s, b) => s + b.postures.length, 0);
+        const np = programmesOf(id).length;
+        return `<a class="disc-card glass t-${d.teinte}" href="#/${id}" aria-label="${esc(d.titre)} : ${esc(d.sous)}">
+          <div class="disc-art" data-preview="${esc(d.apercu)}"></div>
+          <div class="disc-body">
+            <span class="disc-emoji" aria-hidden="true">${d.emoji}</span>
+            <div>
+              <h2>${esc(d.titre)}</h2>
+              <p class="disc-sous">${esc(d.sous)}</p>
+              <p class="muted disc-meta">${n} exercices · ${np} séances guidées</p>
+            </div>
+            <span class="disc-go" aria-hidden="true">${icon("back")}</span>
+          </div>
+        </a>`;
+      }).join("")}
+    </section>
+    ${savedSeances().length ? `<section class="section">
+      <div class="section-head"><h2>Mes séances</h2><a class="muted" href="#/mes-seances">Tout voir</a></div>
+      <div class="filters">${savedSeances().slice(0, 6).map((s) => `<button class="chip saved-chip" data-play-saved="${s.id}">${icon("play")} ${esc(s.nom)}</button>`).join("")}</div>
+    </section>` : ""}`;
+  view.querySelectorAll("[data-preview]").forEach((el) => {
+    const p = getPosture(el.dataset.preview);
+    if (p) stopViewAnims.push(mountPoseAnimation(el, p, { mode: "boucle" }));
+  });
+  view.onclick = (e) => handleCommon(e);
+  view.onchange = null;
+}
+
+// ---------- Bibliothèque d'une discipline ----------
 function postureCard(p) {
   const warn = warningsFor(p);
   const added = inSeance(p.id);
@@ -82,59 +148,40 @@ function chip(group, value, text, pressed) {
   return `<button class="chip" data-filter="${group}" data-value="${esc(value)}" aria-pressed="${pressed}">${esc(text)}</button>`;
 }
 
-function renderCatalogue() {
-  const hour = new Date().getHours();
-  const hello = hour < 12 ? "Bonjour" : hour < 18 ? "Bel après-midi" : "Bonsoir";
-  const suggestion = hour >= 19 ? "soiree-sommeil" : hour < 11 ? "debutant-doux" : "detox-digestion";
-  const prog = allProgrammes().find((p) => p.id === suggestion);
-  const bookList = books();
+function renderCatalogue(disc = "yoga") {
+  if (filters.discipline !== disc) Object.assign(filters, { discipline: disc, moment: "", theme: "", q: "", livre: "", zone: "" });
+  const d = DISCIPLINES[disc];
+  const progs = programmesOf(disc);
+  const yogaBooks = booksOf("yoga");
+  const zones = ZONES_PAR_LIVRE[disc];
   view.innerHTML = `
-    <section class="hero glass">
-      <span class="eyebrow">${hello}</span>
-      <h1>Ralentir, respirer,<br/>se déposer.</h1>
-      <p class="muted">${esc(PRINCIPES.tenue)}</p>
-      <div class="row">
-        <button class="btn" data-play-prog="${prog.id}">${icon("play")} ${esc(prog.titre)} · ${minutes(totalSeconds(progEntries(prog)))}</button>
-        <a class="btn ghost" href="#/seances">Composer ma séance</a>
+    <a class="back" href="#/">${icon("back")} Accueil</a>
+    <section class="hero glass disc-hero t-${d.teinte}">
+      <span class="eyebrow">${d.emoji} ${esc(d.sous)}</span>
+      <h1>${esc(d.titre)}</h1>
+      <p class="muted">${esc(d.accroche)}</p>
+      <div class="prog-chips">
+        ${progs.slice(0, 4).map((pr) => `<button class="btn ${pr === progs[0] ? "" : "ghost"} small" data-play-prog="${esc(pr.id)}">${icon("play")} ${esc(pr.titre.replace(/ · \d+ (min|exercices)$/, ""))} · ${minutes(totalSeconds(progEntries(pr)))}</button>`).join("")}
+        ${progs.length > 4 ? `<a class="btn ghost small" href="#/seances">Toutes les séances (${progs.length})</a>` : ""}
       </div>
     </section>
 
     <section class="section">
-      <div class="section-head"><h2>Mes méthodes</h2></div>
-      <div class="methods">
-        ${bookList.map((b) => `<button class="method glass ${filters.livre === b.id ? "on" : ""}" data-method="${esc(b.id)}">
-          <span class="method-icon">${b.style === "chaise" ? "🪑" : b.style === "yin" ? "🌙" : b.style === "yeux" ? "👁️" : b.style === "etirements" ? "🤸" : b.style === "pilates" ? "◎" : "📖"}</span>
-          <span class="method-txt"><strong>${esc(b.titre)}</strong>
-            <span class="muted">${b.postures.length} fiches · ${b.style === "yeux" ? "contre la fatigue des écrans" : b.style === "etirements" ? "par zone, personnage 3D" : b.style === "pilates" ? "15 exercices au tapis, avatar femme ou homme" : b.mode === "flux" ? "au rythme du souffle" : "tenues longues"}</span></span>
-          ${b.id === "pilates" ? '<span class="tag ok">Nouveau</span>' : ""}
-        </button>`).join("")}
-      </div>
-      ${savedSeances().length ? `<div class="section-head" style="margin-top:20px"><h2>Mes séances</h2><a class="muted" href="#/mes-seances">Tout voir</a></div>
-      <div class="filters">${savedSeances().slice(0, 6).map((s) => `<button class="chip saved-chip" data-play-saved="${s.id}">${icon("play")} ${esc(s.nom)}</button>`).join("")}</div>` : ""}
-      ${bookList.some((b) => b.id === "yoga-chaise") ? `<div class="row" style="margin-top:12px">
-        <button class="btn terra small" data-play-prog="chaise-complete">${icon("play")} Pause yoga sur chaise</button>
-        <button class="btn ghost small" data-play-prog="chaise-express">Nuque & épaules · 5 min</button>
-        <button class="btn ghost small" data-play-prog="yeux-reposes">👁️ Yeux reposés · 5 min</button>
-        <button class="btn ghost small" data-play-prog="etir-reveil">🤸 Réveil en douceur</button>
-        <button class="btn ghost small" data-play-prog="pil-decouverte">◎ Pilates découverte</button>
-      </div>` : ""}
-    </section>
-
-    <section class="section">
-      <input class="search" type="search" placeholder="Rechercher une posture, un bienfait, un méridien…" value="${esc(filters.q)}" id="q" />
-      <div class="filters" style="margin-top:12px">
-        ${chip("moment", "", "Tous les moments", !filters.moment)}
-        ${Object.entries(MOMENTS).map(([k, m]) => chip("moment", k, `${m.label} · ${m.sous}`, filters.moment === k)).join("")}
-      </div>
-      <div class="filters" style="margin-top:8px">
-        ${chip("theme", "", "Tous les bienfaits", !filters.theme)}
-        ${Object.entries(THEMES).map(([k, t]) => chip("theme", k, `${t.emoji} ${t.label}`, filters.theme === k)).join("")}
-      </div>
-      ${bookList.length > 1 ? `<div class="filters" style="margin-top:8px">${chip("livre", "", "Tous les livres", !filters.livre)}${bookList.map((b) => chip("livre", b.id, b.titre, filters.livre === b.id)).join("")}</div>` : ""}
-      ${ZONES_PAR_LIVRE[filters.livre] ? `<div class="filters" style="margin-top:8px">${chip("zone", "", filters.livre === "pilates" ? "Toutes les catégories" : "Toutes les zones", !filters.zone)}${Object.entries(ZONES_PAR_LIVRE[filters.livre]).map(([k, z]) => chip("zone", k, `${z.emoji} ${z.label}`, filters.zone === k)).join("")}</div>` : ""}
+      <input class="search" type="search" placeholder="Rechercher dans ${esc(d.titre)}…" value="${esc(filters.q)}" id="q" />
+      ${disc === "yoga" ? `
+        ${yogaBooks.length > 1 ? `<div class="filters" style="margin-top:12px">${chip("livre", "", "Toutes les méthodes", !filters.livre)}${yogaBooks.map((b) => chip("livre", b.id, `${ICON_LIVRE[b.style] || "📖"} ${b.titre}`, filters.livre === b.id)).join("")}</div>` : ""}
+        <div class="filters" style="margin-top:8px">
+          ${chip("moment", "", "Tous les moments", !filters.moment)}
+          ${Object.entries(MOMENTS).map(([k, m]) => chip("moment", k, `${m.label} · ${m.sous}`, filters.moment === k)).join("")}
+        </div>
+        <div class="filters" style="margin-top:8px">
+          ${chip("theme", "", "Tous les bienfaits", !filters.theme)}
+          ${Object.entries(THEMES).map(([k, t]) => chip("theme", k, `${t.emoji} ${t.label}`, filters.theme === k)).join("")}
+        </div>` : `
+        <div class="filters" style="margin-top:12px">${chip("zone", "", disc === "pilates" ? "Toutes les catégories" : "Toutes les zones", !filters.zone)}${Object.entries(zones).map(([k, z]) => chip("zone", k, `${z.emoji} ${z.label}`, filters.zone === k)).join("")}</div>`}
       <label class="toggle-line" style="margin-top:12px">
         <input type="checkbox" id="adapte" ${filters.adapte ? "checked" : ""} />
-        Masquer les postures déconseillées pour mon profil
+        Masquer les exercices déconseillés pour mon profil
         ${state.contraintes.length ? `<span class="muted">(${state.contraintes.length} contrainte${state.contraintes.length > 1 ? "s" : ""})</span>` : `<a href="#/profil" class="muted">définir</a>`}
       </label>
     </section>
@@ -148,21 +195,7 @@ function renderCatalogue() {
 }
 
 function onCatalogueClick(e) {
-  const m = e.target.closest("[data-method]");
-  if (m) {
-    filters.livre = filters.livre === m.dataset.method ? "" : m.dataset.method;
-    filters.zone = "";
-    renderCatalogue();
-    document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    return;
-  }
   const f = e.target.closest("[data-filter]");
-  if (f && f.dataset.filter === "livre") {
-    filters.livre = f.dataset.value;
-    filters.zone = "";
-    renderCatalogue();
-    return;
-  }
   if (f) {
     filters[f.dataset.filter] = f.dataset.value;
     view.querySelectorAll(`[data-filter="${f.dataset.filter}"]`).forEach((c) => c.setAttribute("aria-pressed", c.dataset.value === f.dataset.value));
@@ -172,6 +205,7 @@ function onCatalogueClick(e) {
 }
 
 function matches(p) {
+  if (disciplineOf(p) !== filters.discipline) return false;
   if (filters.moment && !p.moments?.includes(filters.moment)) return false;
   if (filters.theme && !p.themes?.includes(filters.theme)) return false;
   if (filters.livre && p.livre !== filters.livre) return false;
@@ -189,21 +223,23 @@ function renderResults() {
   if (!box) return;
   const list = allPostures().filter(matches);
   if (!list.length) {
-    box.innerHTML = `<div class="empty glass section"><p class="muted">Aucune posture ne correspond à ces filtres.</p></div>`;
+    box.innerHTML = `<div class="empty glass section"><p class="muted">Aucun exercice ne correspond à ces filtres.</p></div>`;
     return;
   }
-  const groups = filters.moment ? [filters.moment] : Object.keys(MOMENTS);
-  box.innerHTML = groups
-    .map((m) => {
-      const items = list.filter((p) => p.moments?.[0] === m || (filters.moment && p.moments?.includes(m)));
-      if (!items.length) return "";
-      return `<section class="section">
-        <div class="section-head"><h2>${MOMENTS[m].label} <span class="muted serif" style="font-style:italic">· ${MOMENTS[m].sous}</span></h2><span class="muted">${items.length}</span></div>
-        <div class="grid">${items.map(postureCard).join("")}</div>
-      </section>`;
-    })
-    .join("");
-  // Étirements : illustration semi-3D du personnage dans la posture finale
+  const section = (titre, sous, items) => items.length ? `<section class="section">
+      <div class="section-head"><h2>${titre}${sous ? ` <span class="muted serif" style="font-style:italic">· ${sous}</span>` : ""}</h2><span class="muted">${items.length}</span></div>
+      <div class="grid">${items.map(postureCard).join("")}</div>
+    </section>` : "";
+  const zones = ZONES_PAR_LIVRE[filters.discipline];
+  if (zones) {
+    // Étirements : par zone · Pilates : par catégorie
+    box.innerHTML = Object.entries(zones).map(([k, z]) => section(`${z.emoji} ${esc(z.label)}`, "", list.filter((p) => p.zone === k))).join("");
+  } else {
+    const groups = filters.moment ? [filters.moment] : Object.keys(MOMENTS);
+    box.innerHTML = groups.map((m) => section(MOMENTS[m].label, MOMENTS[m].sous,
+      list.filter((p) => p.moments?.[0] === m || (filters.moment && p.moments?.includes(m))))).join("");
+  }
+  // Étirements et Pilates : illustration semi-3D du personnage dans la posture finale
   box.querySelectorAll("[data-char]").forEach((el) => {
     const p = getPosture(el.dataset.char);
     if (p) createCharacter(el, p).render({ phase: "tenue", t: 0, breath: 0.5 });
@@ -256,7 +292,7 @@ function renderPosture(id) {
   const contraintesUtiles = [...new Set([...adapts.map(([c]) => c), ...(p.eviter || [])])];
 
   view.innerHTML = `
-    <a class="back" href="#/">${icon("back")} Bibliothèque</a>
+    <a class="back" href="#/${disciplineOf(p)}">${icon("back")} ${esc(DISCIPLINES[disciplineOf(p)].titre)}</a>
     <section class="detail-hero glass">
       <div class="hero-art-wrap" style="position:relative">
         ${postureFigure(p, { cls: "hero-art" })}
@@ -357,8 +393,12 @@ function renderSeances() {
       <span class="eyebrow">Programmes</span>
       <h1 style="margin-top:4px">Séances guidées</h1>
     </section>
-    <section class="section grid">
-      ${allProgrammes().map((pr) => {
+    ${Object.entries(DISCIPLINES).map(([dk, d]) => {
+      const progs = programmesOf(dk);
+      if (!progs.length) return "";
+      return `<section class="section">
+        <div class="section-head"><h2>${d.emoji} ${esc(d.titre)} <span class="muted serif" style="font-style:italic">· ${esc(d.sous)}</span></h2><a class="muted" href="#/${dk}">Bibliothèque</a></div>
+        <div class="grid">${progs.map((pr) => {
         const entries = progEntries(pr);
         const flagged = entries.filter((e) => warningsFor(e.posture).length);
         return `<div class="prog glass">
@@ -369,8 +409,9 @@ function renderSeances() {
           ${flagged.length ? `<p style="font-size:.8rem;color:var(--warn)">${flagged.length} posture(s) déconseillée(s) pour ton profil : génère plutôt une séance adaptée.</p>` : ""}
           <div class="row" style="margin-top:6px"><button class="btn small" data-play-prog="${pr.id}">${icon("play")} ${minutes(totalSeconds(entries))}</button></div>
         </div>`;
-      }).join("")}
-    </section>
+      }).join("")}</div>
+      </section>`;
+    }).join("")}
 
     <section class="section glass panel">
       <h2>Générer une séance adaptée</h2>

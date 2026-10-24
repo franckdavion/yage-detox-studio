@@ -47,7 +47,9 @@ export function speak(texts, { force = false } = {}) {
       const u = new SpeechSynthesisUtterance(t);
       u.lang = voice?.lang || "fr-FR";
       if (voice) u.voice = voice;
-      u.rate = state.voix.vitesse;
+      // La vitesse de lecture du lecteur module aussi la voix, dans des limites naturelles
+      const tempo = Math.min(1.25, Math.max(0.85, state.vitesseLecture || 1));
+      u.rate = state.voix.vitesse * tempo;
       u.pitch = 0.95;
       const done = () => { if (--remaining === 0) resolve(); };
       u.onend = done;

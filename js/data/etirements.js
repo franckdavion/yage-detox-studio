@@ -165,6 +165,41 @@ export const POSTURES_ETIREMENTS = [
     minuteur: { duree: 45, cotes: false },
     adaptations: {"genoux":"Coussin entre les mollets et les cuisses.", "hanches":"Écarte les genoux plus largement."},
   }),
+  defineEtirement({
+    // 1. Identité
+    id: "etir-cobra",
+    nom: "Cobra",
+    zone: "dos",
+    famille: "Sur le ventre, extension de la colonne",
+    moments: ["milieu"],
+    themes: ["energie", "souplesse"],
+    racines: "Bassin et mains au sol",
+    // 2. Bienfaits
+    bienfaits: ["Étire les abdominaux et l'avant du buste", "Assouplit la colonne en extension", "Contrebalance la position assise"],
+    // 3. Étapes synchronisées (texte lu par la synthèse vocale)
+    etapes: {
+      installation: [
+        "Allonge-toi sur le ventre, mains sous les épaules, coudes près du corps.",
+        "Allonge les jambes, dessus des pieds au sol.",
+        "Inspire et décolle doucement la poitrine en poussant dans les mains.",
+        "Garde les coudes légèrement pliés et les épaules loin des oreilles.",
+      ],
+      maintien: {
+        respiration: "Inspire en ouvrant la poitrine, expire en relâchant les fessiers et les épaules.",
+        reperes: ["Le pubis reste au sol", "Les épaules descendent", "La nuque prolonge la colonne"],
+        visualisation: "Ton buste s'élève comme un serpent qui se réchauffe au soleil.",
+      },
+      relachement: [
+        "Redescends vertèbre par vertèbre et pose la joue au sol.",
+      ],
+    },
+    // 4. Personnage semi-3D et minuteur
+    personnage: { depart: "ventre", posture: "cobra" },
+    minuteur: { duree: 30, cotes: false },
+    adaptations: {"dos":"Reste sur les avant-bras, comme le sphinx.", "debutant":"Décolle à peine la poitrine, sans tendre les bras."},
+    eviter: ["grossesse"],
+    precautions: ["À éviter pendant la grossesse et en cas de douleur lombaire aiguë"],
+  }),
   // ---------- JAMBES ----------
   defineEtirement({
     // 1. Identité
@@ -497,6 +532,39 @@ export const POSTURES_ETIREMENTS = [
     minuteur: { duree: 30, cotes: false },
     adaptations: {"epaules":"Tiens une serviette entre les mains plutôt que de croiser les doigts."},
   }),
+  defineEtirement({
+    // 1. Identité
+    id: "etir-nuque-laterale",
+    nom: "Nuque et trapèzes",
+    zone: "haut",
+    famille: "Assis, inclinaison latérale de la tête",
+    moments: ["debut", "fin"],
+    themes: ["bureau", "calme"],
+    racines: "Ischions au sol",
+    // 2. Bienfaits
+    bienfaits: ["Relâche le haut des trapèzes", "Soulage la nuque après les écrans", "Apaise"],
+    // 3. Étapes synchronisées (texte lu par la synthèse vocale)
+    etapes: {
+      installation: [
+        "Assieds-toi droit, épaules relâchées.",
+        "Laisse l'oreille droite descendre vers l'épaule droite.",
+        "Pose la main droite sur le côté de la tête, sans tirer.",
+        "Laisse l'épaule gauche descendre vers le sol.",
+      ],
+      maintien: {
+        respiration: "Respire dans le côté du cou étiré : à chaque expiration, l'épaule opposée descend un peu plus.",
+        reperes: ["La main pèse à peine", "L'épaule opposée descend", "Le menton reste droit"],
+        visualisation: "Ton épaule est un poids qui glisse doucement vers le sol.",
+      },
+      relachement: [
+        "Retire la main, ramène la tête au centre en inspirant, puis change de côté.",
+      ],
+    },
+    // 4. Personnage semi-3D et minuteur
+    personnage: { depart: "assisTailleur", posture: "nuqueLaterale" },
+    minuteur: { duree: 30, cotes: true },
+    adaptations: {"nuque":"Ne pose pas la main : laisse seulement le poids de la tête agir."},
+  }),
 ];
 
 export const PROGRAMMES_ETIREMENTS = [
@@ -508,6 +576,7 @@ export const PROGRAMMES_ETIREMENTS = [
     "postures": [
       "etir-chat-vache",
       "etir-mollets",
+      "etir-nuque-laterale",
       "etir-epaule-croisee",
       "etir-pectoraux",
       "etir-genoux-poitrine"
@@ -521,18 +590,35 @@ export const PROGRAMMES_ETIREMENTS = [
     "postures": [
       "etir-chat-vache",
       "etir-genoux-poitrine",
+      "etir-cobra",
       "etir-torsion-allongee",
       "etir-figure-quatre",
       "etir-enfant-bras"
     ]
   },
   {
+    "id": "etir-recup",
+    "titre": "Récupération après l'effort",
+    "description": "Après la course, le vélo ou le renforcement : mollets, cuisses, hanches et dos.",
+    "theme": "souplesse",
+    "postures": [
+      "etir-mollets",
+      "etir-quadriceps",
+      "etir-ischios-assis",
+      "etir-fente-basse",
+      "etir-cobra",
+      "etir-figure-quatre",
+      "etir-genoux-poitrine"
+    ]
+  },
+  {
     "id": "etir-complet",
     "titre": "Étirements complets",
-    "description": "Les 14 étirements, du dos au haut du corps.",
+    "description": "Les 16 étirements, du dos au haut du corps.",
     "theme": "souplesse",
     "postures": [
       "etir-chat-vache",
+      "etir-nuque-laterale",
       "etir-papillon",
       "etir-mollets",
       "etir-epaule-croisee",
@@ -541,6 +627,7 @@ export const PROGRAMMES_ETIREMENTS = [
       "etir-fente-basse",
       "etir-triceps",
       "etir-pectoraux",
+      "etir-cobra",
       "etir-jambe-ciel",
       "etir-figure-quatre",
       "etir-genoux-poitrine",

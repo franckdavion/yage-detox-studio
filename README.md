@@ -2,7 +2,13 @@
 
 Application web de yoga interactive : bibliothèque de postures, séances détox et lecteur guidé à la voix, pensé pour pratiquer les yeux fermés.
 
-## Phase 1 — Moteur Yin (cette version)
+## Accueil : trois disciplines
+
+À l'ouverture, l'application affiche trois cartes animées : **Yoga** (sérénité & flux : Yin, yoga sur chaise, yoga des yeux et livres importés), **Étirements** (mobilité & récupération) et **Pilates** (contrôle du centre & mobilité de la colonne). Chaque carte ouvre la bibliothèque de sa discipline (`#/yoga`, `#/etirements`, `#/pilates`), strictement filtrée, avec ses séances guidées et ses filtres propres : méthode, moment et bienfait pour le yoga, zone pour les étirements, catégorie pour le Pilates. L'onglet Séances regroupe aussi les programmes par discipline.
+
+Lecteur commun : personnage semi-3D pour toutes les disciplines, avatar femme / homme, vitesse de lecture (0,75× à 1,5×, voix comprise), barre de progression de l'exercice (déplaçable pendant la tenue), onde vocale, lecture / pause / précédent / suivant. Une posture peut aussi fournir un rendu 3D réaliste pré-rendu (`rendu3d: { femme: "…mp4", homme: "…mp4" }`) : le lecteur l'affiche à la place du personnage, synchronisé avec la pause et la vitesse.
+
+## Phase 1 — Moteur Yin
 
 - **Bibliothèque** de 25 postures Yin, classées par moment (Début · Ancrage, Milieu · Profondeur, Fin · Intériorisation) et par bienfait (Détox digestion, Lâcher-prise, Souplesse, Calme & sommeil, Énergie). Recherche par nom, bienfait ou méridien.
 - **Fiche posture** structurée selon la méthode du livre : entrée, optimisation, adaptabilité, contre-indications, visualisation, bienfaits, sortie, contre-posture.
@@ -22,7 +28,7 @@ Séquence de 11 fiches (mise en condition + 10 postures) inspirée du *Petit gui
 
 ## Étirements (quatrième méthode)
 
-14 étirements fondamentaux classés par zone (dos, jambes, hanches, haut du corps), avec étapes, repères, adaptations, bienfaits et précautions (`js/data/etirements.js`). Le personnage passe en **rendu semi-3D** (dégradés de volume, reflets, ombre portée, tapis en relief, accessoires mur et sangle) et suit les phases installation → respiration et maintien → relâchement, piloté par le lecteur avec guidage vocal. Filtre par zone dans la bibliothèque, générateur qui équilibre les zones. Programmes : « Réveil en douceur », « Dos libéré », « Étirements complets ».
+16 étirements classés par zone (dont le cobra et l'étirement nuque et trapèzes) (dos, jambes, hanches, haut du corps), avec étapes, repères, adaptations, bienfaits et précautions (`js/data/etirements.js`). Le personnage passe en **rendu semi-3D** (dégradés de volume, reflets, ombre portée, tapis en relief, accessoires mur et sangle) et suit les phases installation → respiration et maintien → relâchement, piloté par le lecteur avec guidage vocal. Filtre par zone dans la bibliothèque, générateur qui équilibre les zones. Programmes : « Réveil en douceur », « Dos libéré », « Récupération après l'effort », « Étirements complets ».
 
 Chaque étirement est déclaré avec le **modèle obligatoire** `defineEtirement()` (`js/data/modele-etirement.js`) : identité et zone, bienfaits, étapes synchronisées (texte TTS d'installation, de maintien et de relâchement), paramètres du personnage semi-3D et du minuteur. Le modèle est vérifié au démarrage (alertes « [Modèle étirement] » dans la console). La procédure d'ajout à partir d'un simple nom est décrite dans `CLAUDE.md`.
 

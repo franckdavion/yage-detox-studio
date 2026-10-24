@@ -15,6 +15,7 @@ const defaults = {
   ia: { cle: "", modele: "claude-sonnet-5-5" },
   lecteurVisuel: "personnage", // "personnage" | "photo"
   avatar: "femme",           // "femme" | "homme" (personnage du lecteur)
+  vitesseLecture: 1,        // 0.75 | 1 | 1.25 | 1.5 (tempo du lecteur)
   seancesPerso: [],         // séances enregistrées : { id, nom, postures: [{ id, duree }], creeLe, modifieLe }
   edition: null,            // séance en cours de modification dans le créateur : { id, nom }
 };

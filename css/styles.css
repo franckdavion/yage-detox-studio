@@ -338,3 +338,63 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .voicewave.talking span { background: var(--terra); opacity: 0.85; }
 .avatar-btn { font-size: 1.15rem; font-weight: 700; color: var(--sage-deep); }
 .pose-anim .trails path { filter: blur(0.4px); }
+
+/* ---------- Accueil : choix de la discipline ---------- */
+.hub-head { margin-top: 22px; }
+.hub-head h1 { margin: 6px 0 6px; }
+.disc-grid { display: grid; gap: 16px; margin-top: 20px; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .disc-grid { grid-template-columns: repeat(3, 1fr); } }
+.disc-card {
+  display: flex; flex-direction: column; overflow: hidden; color: inherit; text-decoration: none;
+  border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 0;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.disc-card:hover { transform: translateY(-3px); box-shadow: 0 18px 50px -22px rgba(80, 60, 40, .45); }
+.disc-card:active { transform: scale(.985); }
+.disc-card:focus-visible { outline: 2px solid var(--sage-deep); outline-offset: 3px; }
+.disc-art { height: 168px; position: relative; }
+@media (min-width: 820px) { .disc-art { height: 200px; } }
+.disc-art .pose-anim { position: absolute; inset: 0; }
+.t-sage .disc-art { background: linear-gradient(160deg, color-mix(in srgb, var(--sage) 45%, var(--paper)), color-mix(in srgb, var(--sage) 18%, var(--paper))); }
+.t-terra .disc-art { background: linear-gradient(160deg, color-mix(in srgb, var(--terra) 45%, var(--paper)), color-mix(in srgb, var(--clay) 30%, var(--paper))); }
+.t-lavande .disc-art { background: linear-gradient(160deg, color-mix(in srgb, #9a9cc4 45%, var(--paper)), color-mix(in srgb, #9a9cc4 15%, var(--paper))); }
+.disc-body { display: flex; align-items: center; gap: 14px; padding: 16px 18px 18px; }
+.disc-emoji { font-size: 1.7rem; width: 50px; height: 50px; flex: none; display: grid; place-items: center; border-radius: 16px; background: color-mix(in srgb, var(--sand) 70%, transparent); }
+.disc-body > div { flex: 1; min-width: 0; }
+.disc-body h2 { margin: 0; font-size: 1.6rem; }
+.disc-sous { margin: 2px 0 0; font-weight: 600; font-size: .92rem; color: var(--sage-deep); }
+.t-terra .disc-sous { color: var(--terra-deep); }
+.t-lavande .disc-sous { color: #6c6fa3; }
+:root[data-theme="dark"] .t-lavande .disc-sous { color: #b9bbe4; }
+.disc-meta { margin: 4px 0 0; font-size: .8rem; }
+.disc-go { flex: none; opacity: .55; }
+.disc-go svg { width: 22px; height: 22px; }
+.disc-hero.t-terra { background: linear-gradient(150deg, color-mix(in srgb, var(--terra) 16%, var(--glass)), var(--glass)); }
+.disc-hero.t-sage { background: linear-gradient(150deg, color-mix(in srgb, var(--sage) 18%, var(--glass)), var(--glass)); }
+.disc-hero.t-lavande { background: linear-gradient(150deg, color-mix(in srgb, #9a9cc4 20%, var(--glass)), var(--glass)); }
+.prog-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+/* ---------- Lecteur : barre de progression, vitesse, rendu 3D vidéo ---------- */
+.ptimeline { width: min(420px, 100%); margin: 2px auto 0; }
+.pt-bar { position: relative; height: 22px; display: flex; align-items: center; cursor: default; touch-action: none; }
+.pt-bar::before { content: ""; position: absolute; left: 0; right: 0; height: 4px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 12%, transparent); }
+.pt-fill { position: absolute; left: 0; right: 0; height: 4px; border-radius: 4px; background: var(--sage-deep); transform-origin: left center; transform: scaleX(0); }
+.pt-knob { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--paper); border: 2px solid var(--sage-deep); box-shadow: 0 2px 6px rgba(0,0,0,.18); opacity: 0; transition: opacity .2s; }
+.pt-bar.seekable { cursor: pointer; }
+.pt-bar.seekable .pt-knob { opacity: 1; }
+.pt-bar:focus-visible { outline: 2px solid var(--sage-deep); outline-offset: 2px; border-radius: 6px; }
+.pt-times { display: flex; justify-content: space-between; font-size: .78rem; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.speed-btn { border-radius: 20px; font-weight: 700; font-size: .78rem; letter-spacing: -.01em; width: auto; min-width: 44px; padding: 0 8px; }
+.dial-video { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.dial-visual.mirror .dial-video { transform: scaleX(-1); }
+.disc-go svg { transform: scaleX(-1); }
+.disc-art [data-k="label"] { display: none; }
+@media (max-width: 819px) {
+  .disc-grid { gap: 12px; margin-top: 14px; }
+  .disc-card { flex-direction: row; align-items: stretch; min-height: 150px; }
+  .disc-art { width: 38%; height: auto; flex: none; }
+  .disc-body { padding: 14px 12px 14px 14px; flex-wrap: wrap; align-content: center; gap: 6px 10px; }
+  .disc-emoji { display: none; }
+  .disc-body h2 { font-size: 1.45rem; }
+  .disc-go { align-self: center; }
+}

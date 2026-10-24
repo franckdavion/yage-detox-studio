@@ -6,6 +6,10 @@ import { esc, fmt, icon, postureFigure } from "./ui.js";
 import { createCharacter } from "./animation.js";
 
 const ROOT = () => document.getElementById("player-root");
+// Vitesse de lecture : accélère ou ralentit le tempo (minuteur, souffle, personnage, voix)
+const SPEEDS = [0.75, 1, 1.25, 1.5];
+const speed = () => (SPEEDS.includes(state.vitesseLecture) ? state.vitesseLecture : 1);
+const fmtSpeed = (v) => `${String(v).replace(".", ",")}×`;
 const RING = 2 * Math.PI * 46;
 
 // Transforme une liste [{posture, duree}] en étapes, avec les deux côtés si nécessaire
@@ -62,6 +66,7 @@ class Session {
         <button class="icon-btn" data-act="close" aria-label="Fermer le lecteur">${icon("close")}</button>
         <span class="eyebrow">${esc(this.titre)}</span>
         <div class="row" style="gap:6px">
+        <button class="icon-btn speed-btn" data-act="speed" aria-label="Vitesse de lecture" title="Vitesse de lecture">${fmtSpeed(speed())}</button>
         <button class="icon-btn avatar-btn" data-act="avatar" aria-label="Changer d'avatar (femme / homme)" title="Avatar femme / homme">${state.avatar === "homme" ? "♂" : "♀"}</button>
         <button class="icon-btn" data-act="visual" aria-label="Basculer personnage / photo" title="Personnage ou photo">${icon(state.lecteurVisuel === "photo" ? "person" : "image")}</button>
         <button class="icon-btn" data-act="voice" aria-label="Activer ou couper la voix">${icon(state.voix.active ? "voice" : "mute")}</button>
@@ -91,6 +96,12 @@ class Session {
         </div>
         <div class="voicewave" data-ref="wave" aria-hidden="true">${"<span></span>".repeat(18)}</div>
         <p class="cue-text" data-ref="cue" aria-live="polite"></p>
+        <div class="ptimeline">
+          <div class="pt-bar" data-ref="bar" role="slider" tabindex="0" aria-label="Progression de l'exercice" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="pt-fill" data-ref="fill"></div><div class="pt-knob" data-ref="knob"></div>
+          </div>
+          <div class="pt-times"><span data-ref="tcur">0:00</span><span class="muted" data-ref="tlabel"></span><span data-ref="ttot">—</span></div>
+        </div>
         <div class="controls">
           <button class="ctrl" data-act="prev" aria-label="Posture précédente">${icon("prev")}</button>
           <button class="ctrl main" data-act="toggle" aria-label="Pause / lecture">${icon("pause")}</button>
@@ -109,6 +120,13 @@ class Session {
       if (a === "toggle") this.togglePause();
       if (a === "next") this.skip();
       if (a === "prev") this.back();
+      if (a === "speed") {
+        const i = SPEEDS.indexOf(speed());
+        state.vitesseLecture = SPEEDS[(i + 1) % SPEEDS.length];
+        save();
+        b.textContent = fmtSpeed(speed());
+        if (this.video) this.video.playbackRate = speed();
+      }
       if (a === "avatar") {
         state.avatar = state.avatar === "homme" ? "femme" : "homme";
         save();
@@ -131,6 +149,28 @@ class Session {
         if (!state.voix.active) stopSpeaking();
       }
     });
+    // Barre de progression : toucher / glisser pour se déplacer dans la tenue
+    const bar = this.refs.bar;
+    const seekFromEvent = (e) => {
+      const r = bar.getBoundingClientRect();
+      this.seekTo(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)));
+    };
+    bar.addEventListener("pointerdown", (e) => {
+      if (this.phase !== "tenue") return;
+      bar.setPointerCapture?.(e.pointerId);
+      seekFromEvent(e);
+      const move = (ev) => seekFromEvent(ev);
+      const up = () => { bar.removeEventListener("pointermove", move); bar.removeEventListener("pointerup", up); bar.removeEventListener("pointercancel", up); };
+      bar.addEventListener("pointermove", move);
+      bar.addEventListener("pointerup", up);
+      bar.addEventListener("pointercancel", up);
+    });
+    bar.addEventListener("keydown", (e) => {
+      if (this.phase !== "tenue" || !this.phaseLength) return;
+      const step = 10000 / this.phaseLength;
+      if (e.key === "ArrowRight") { e.preventDefault(); e.stopPropagation(); this.seekTo(this.elapsed / this.phaseLength + step); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); e.stopPropagation(); this.seekTo(this.elapsed / this.phaseLength - step); }
+    });
     this.onKey = (e) => {
       if (e.key === "Escape") closePlayer();
       if (e.key === " ") { e.preventDefault(); this.togglePause(); }
@@ -150,15 +190,25 @@ class Session {
     const v = this.refs.visual;
     v.classList.toggle("mirror", cote === "gauche");
     const usePhoto = state.lecteurVisuel === "photo" && posture.image;
-    const key = `${posture.id}:${usePhoto ? "photo" : "perso"}`;
+    // Rendu 3D réaliste (vidéo pré-rendue par avatar), quand la posture en fournit un
+    const render3d = !usePhoto && posture.rendu3d?.[state.avatar];
+    const key = `${posture.id}:${usePhoto ? "photo" : render3d ? "video" : "perso"}:${state.avatar}`;
     if (v.dataset.key === key) return;
     v.dataset.key = key;
     this.character = null;
+    this.video = null;
     const toCharacter = () => {
+      this.video = null;
       this.character = createCharacter(v, posture, { aspect: 1.05 });
       this.renderCharacter();
     };
-    if (!usePhoto) toCharacter();
+    if (render3d) {
+      v.innerHTML = `<video class="dial-video" src="${esc(render3d)}" muted loop playsinline autoplay preload="auto"></video>`;
+      this.video = v.querySelector("video");
+      this.video.playbackRate = speed();
+      if (this.paused) this.video.pause();
+      this.video.addEventListener("error", () => { if (v.dataset.key === key) toCharacter(); }, { once: true });
+    } else if (!usePhoto) toCharacter();
     else {
       v.innerHTML = postureFigure(posture, { cls: "dial-art" });
       // Photo introuvable : le personnage prend le relais
@@ -308,6 +358,7 @@ class Session {
     b.innerHTML = icon(this.paused ? "play" : "pause");
     this.el.classList.toggle("paused", this.paused);
     if (this.paused) pauseSpeaking(); else resumeSpeaking();
+    if (this.video) this.paused ? this.video.pause() : this.video.play().catch(() => {});
   }
 
   // --- Boucle d'animation ---
@@ -315,7 +366,7 @@ class Session {
     const dt = now - this.last;
     this.last = now;
     if (!this.paused && this.phase !== "fin") {
-      this.elapsed += dt;
+      this.elapsed += dt * speed();
       this.update();
     }
     this.raf = requestAnimationFrame(this.loop);
@@ -325,6 +376,39 @@ class Session {
     this.updateTimer();
     this.renderCharacter();
     this.updateWave();
+    this.updateTimeline();
+  }
+
+  // Barre de progression de l'exercice en cours (tenue : déplaçable ; installation / sortie : indicative)
+  updateTimeline() {
+    const r = this.refs;
+    const labels = { installation: "Installation", tenue: this.step.posture.mode === "flux" ? "Exercice" : "Tenue", sortie: "Sortie", fin: "" };
+    const total = this.phase === "tenue" ? this.phaseLength : this.phaseLength || 0;
+    const ratio = total ? Math.min(1, this.elapsed / total) : 0;
+    r.fill.style.transform = `scaleX(${ratio.toFixed(4)})`;
+    r.knob.style.left = `${(ratio * 100).toFixed(2)}%`;
+    r.bar.classList.toggle("seekable", this.phase === "tenue");
+    r.bar.setAttribute("aria-valuenow", Math.round(ratio * 100));
+    r.tcur.textContent = fmt(Math.floor(this.elapsed / 1000));
+    r.ttot.textContent = total ? fmt(Math.round(total / 1000)) : "…";
+    r.tlabel.textContent = labels[this.phase] || "";
+  }
+
+  // Se déplacer dans la tenue : les consignes déjà passées ne sont pas relues
+  seekTo(ratio) {
+    if (this.phase !== "tenue" || !this.phaseLength) return;
+    ratio = Math.min(0.999, Math.max(0, ratio));
+    this.elapsed = ratio * this.phaseLength;
+    stopSpeaking();
+    for (const [rr, k] of [[0.22, "o1"], [0.4, "visu"], [0.65, "o2"], [0.82, "o3"]]) if (ratio >= rr) this.spoken.add(k);
+    const cycle = this.breathIn + this.breathOut;
+    const c = Math.floor(this.elapsed / cycle);
+    const inhale = this.elapsed % cycle < this.breathIn;
+    for (let i = 0; i < c; i++) { this.spoken.add(`b${i}i`); this.spoken.add(`b${i}e`); }
+    this.spoken.add(`b${c}i`);
+    if (!inhale) this.spoken.add(`b${c}e`);
+    if (this.phaseLength - this.elapsed < 15000) this.spoken.add("end");
+    this.update();
   }
 
   // Visualiseur d'onde : s'anime quand la voix parle, ondule doucement au rythme du souffle sinon
