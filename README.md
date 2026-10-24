@@ -48,3 +48,5 @@ python3 -m http.server 8000
 ## Déployer sur GitHub Pages
 
 Settings → Pages → Source : *Deploy from a branch* → `main` / `/ (root)`.
+
+Adresse : https://franckdavion.github.io/yage-detox-studio/
