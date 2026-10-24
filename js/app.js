@@ -4,13 +4,14 @@ import {
   state, save, books, allPostures, getPosture, allProgrammes,
   toggleContrainte, warningsFor, matchedAdaptations, inSeance, toggleSeance,
 } from "./store.js";
-import { esc, icon, toast, cardArt, minutes } from "./ui.js";
+import { esc, icon, toast, minutes, postureFigure, installImageFallbacks } from "./ui.js";
 import { openPlayer } from "./player.js";
 import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
 const view = document.getElementById("view");
+installImageFallbacks();
 const filters = { moment: "", theme: "", q: "", adapte: false, livre: "" };
 const label = (id) => CONTRAINTES.find((c) => c.id === id)?.label || id;
 const NIVEAUX = { debutant: "Débutant", intermediaire: "Intermédiaire", avance: "Avancé" };
@@ -46,7 +47,7 @@ function postureCard(p) {
   return `
     <a class="card glass" href="#/posture/${encodeURIComponent(p.id)}">
       <button class="add-fab ${added ? "in" : ""}" data-add="${esc(p.id)}" aria-label="${added ? "Retirer de" : "Ajouter à"} ma séance">${icon(added ? "check" : "plus")}</button>
-      ${cardArt(p)}
+      ${postureFigure(p, { cls: "card-art" })}
       <div class="card-body">
         <span class="eyebrow">${esc(p.sanskrit)}</span>
         <h3>${esc(p.nom)}</h3>
@@ -191,6 +192,7 @@ function renderPosture(id) {
   view.innerHTML = `
     <a class="back" href="#/">${icon("back")} Bibliothèque</a>
     <section class="detail-hero glass">
+      ${postureFigure(p, { cls: "hero-art" })}
       <span class="eyebrow">${esc(p.famille || "")}</span>
       <h1>${esc(p.nom)}</h1>
       <div class="sanskrit">${esc(p.sanskrit)}</div>
@@ -221,6 +223,7 @@ function renderPosture(id) {
       <div class="filters" style="flex-wrap:wrap;margin-top:10px">
         ${(contraintesUtiles.length ? contraintesUtiles : CONTRAINTES.map((c) => c.id)).map((c) => `<button class="chip" data-contrainte="${c}" aria-pressed="${state.contraintes.includes(c)}">${esc(label(c))}</button>`).join("")}
       </div>
+      ${p.imageVariante ? `<figure class="variant-fig">${postureFigure(p, { variant: true, cls: "variant-art" })}<figcaption class="muted">${esc(p.imageVariante.legende)}</figcaption></figure>` : ""}
       <div class="adapt-list">
         ${adapts.map(([c, t]) => `<div class="adapt ${state.contraintes.includes(c) ? "match" : ""}"><b>${esc(label(c))}</b>${esc(t)}</div>`).join("") || '<p class="muted">Aucune adaptation particulière dans le livre.</p>'}
       </div>

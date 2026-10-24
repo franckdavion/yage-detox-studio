@@ -226,3 +226,23 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .breath-orb, .hero::after, .card { transition: none; animation: none; }
 }
+
+/* Figures de posture : illustration zen en fond + photo par-dessus */
+.pfig { position: relative; overflow: hidden; background: var(--sand); }
+.pfig .zen-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pfig .zen-figure { transition: opacity 0.4s ease; }
+.pfig.has-photo .zen-figure { opacity: 0; }
+.pfig-photo { position: absolute; left: 6%; right: 6%; top: 8%; bottom: 4%; width: 88%; height: 88%; object-fit: contain; object-position: center bottom; opacity: 0; transition: opacity 0.5s ease; filter: drop-shadow(0 8px 14px rgba(60, 40, 30, 0.18)); }
+.pfig-photo.loaded { opacity: 1; }
+.card-art { height: 150px; }
+.hero-art { height: clamp(190px, 46vw, 300px); margin: -26px -22px 20px; border-radius: var(--radius) var(--radius) 0 0; }
+.variant-fig { margin: 14px 0 0; }
+.variant-art { height: 170px; border-radius: 16px; }
+.variant-fig figcaption { font-size: 0.82rem; margin-top: 6px; text-align: center; }
+.player-fig { width: min(86vw, 420px); }
+.player-fig:empty { display: none; }
+.player-art { height: clamp(110px, 22vh, 190px); border-radius: 20px; }
+.player-fig.mirror .pfig-photo, .player-fig.mirror .zen-figure { transform: scaleX(-1); transform-origin: center; transform-box: fill-box; }
+.player-main { gap: 12px; }
+.player .dial { width: min(66vw, 300px, 36vh); }
+.dial-time.word { font-size: clamp(1.4rem, 6vw, 1.9rem); }

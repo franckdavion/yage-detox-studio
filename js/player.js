@@ -2,7 +2,7 @@
 // Deux modes : « statique » (Yin, minuteur long) et « flux » (styles dynamiques, compteur de respirations).
 import { state, matchedAdaptations } from "./store.js";
 import { speak, stopSpeaking, pauseSpeaking, resumeSpeaking } from "./tts.js";
-import { esc, fmt, icon } from "./ui.js";
+import { esc, fmt, icon, postureFigure } from "./ui.js";
 
 const ROOT = () => document.getElementById("player-root");
 const RING = 2 * Math.PI * 46;
@@ -64,6 +64,7 @@ class Session {
       </div>
       <div class="player-progress">${this.steps.map(() => "<span></span>").join("")}</div>
       <div class="player-main">
+        <div class="player-fig" data-ref="fig"></div>
         <div class="player-title">
           <div class="phase" data-ref="phase"></div>
           <h2 data-ref="name"></h2>
@@ -153,6 +154,11 @@ class Session {
     const r = this.refs;
     this.renderProgress();
     r.name.textContent = posture.nom;
+    if (r.fig.dataset.id !== posture.id) {
+      r.fig.dataset.id = posture.id;
+      r.fig.innerHTML = postureFigure(posture, { cls: "player-art" });
+    }
+    r.fig.classList.toggle("mirror", cote === "gauche");
     r.sub.textContent = posture.sanskrit + (cote ? ` · côté ${cote}` : "");
     const next = this.steps[this.index + 1];
     r.nextup.textContent = next ? `Ensuite : ${next.posture.nom}${next.cote ? " (côté " + next.cote + ")" : ""}` : "Dernière posture";
@@ -200,6 +206,7 @@ class Session {
     }
     if (phase === "fin") {
       r.phase.textContent = "Fin de séance";
+      r.fig.innerHTML = "";
       r.name.textContent = "Namasté";
       r.sub.textContent = "Merci pour cette pratique";
       r.cue.textContent = "Garde quelques instants ce calme avec toi avant de reprendre tes activités.";
@@ -269,8 +276,10 @@ class Session {
       r.orb.style.transform = `scale(${inhale ? 1 : 0.72})`;
       if (posture.mode === "flux") {
         const n = Math.min(posture.respirations || 5, Math.floor(this.elapsed / cycle) + 1);
+        r.time.classList.remove("word");
         r.time.textContent = `${n}/${posture.respirations || 5}`;
       } else {
+        r.time.classList.remove("word");
         r.time.textContent = fmt(Math.ceil(left / 1000));
       }
       // Guidage du souffle à voix haute sur les trois premiers cycles
@@ -316,7 +325,7 @@ class Session {
     speak(text);
   }
 
-  setTimeDisplay(t) { this.refs.time.textContent = t; }
+  setTimeDisplay(t) { this.refs.time.textContent = t; this.refs.time.classList.add("word"); }
 
   renderProgress() {
     [...this.el.querySelectorAll(".player-progress span")].forEach((s, i) => {

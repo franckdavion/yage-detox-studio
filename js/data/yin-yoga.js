@@ -1014,3 +1014,27 @@ export const PROGRAMMES = [
     postures: ["enfant", "papillon", "sphinx", "banane", "torsion-dos", "bebe-heureux", "savasana"],
   },
 ];
+
+// Images des postures (extraites du livre). Chemins relatifs à la racine du site.
+// Si un fichier manque, l'interface affiche automatiquement une illustration vectorielle de secours.
+const IMG = (id) => `assets/postures/${id}.webp`;
+const VARIANTES = {
+  papillon: "Avec bolster",
+  "coeur-fondant": "Avec bolster",
+  diamant: "Étirement des chevilles",
+  sphinx: "Le phoque",
+  "double-pigeon": "Avec coussin",
+  grenouille: "Avec bolster",
+  chenille: "Avec bolster",
+  lezard: "Avec bolster",
+  "cerf-endormi": "Buste allongé sur bolster",
+  "demi-papillon": "Avec bolster",
+  cygne: "Avec bolster",
+  lacet: "Avec bolster",
+  libellule: "Avec bolster",
+  enfant: "Avec bolster",
+};
+for (const p of POSTURES) {
+  p.image = IMG(p.id);
+  if (VARIANTES[p.id]) p.imageVariante = { src: IMG(p.id + "-support"), legende: VARIANTES[p.id] };
+}
