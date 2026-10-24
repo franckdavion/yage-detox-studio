@@ -11,6 +11,8 @@ const defaults = {
   souffle: { inspire: 4, expire: 6 },
   ia: { cle: "", modele: "claude-sonnet-5-5" },
   lecteurVisuel: "personnage", // "personnage" | "photo"
+  seancesPerso: [],         // séances enregistrées : { id, nom, postures: [{ id, duree }], creeLe, modifieLe }
+  edition: null,            // séance en cours de modification dans le créateur : { id, nom }
 };
 
 function load() {
@@ -76,7 +78,56 @@ export function matchedAdaptations(p) {
   return Object.entries(p.adaptations || {}).filter(([c]) => state.contraintes.includes(c));
 }
 
-// --- Ma séance ---
+// --- Mes séances enregistrées (persistées dans localStorage avec le reste de l'état) ---
+export function savedSeances() {
+  return state.seancesPerso;
+}
+export function getSeance(id) {
+  return state.seancesPerso.find((s) => s.id === id);
+}
+// Enregistre la séance du créateur. Avec un id existant : mise à jour ; sinon : nouvelle séance.
+export function saveSeance(nom, id = null) {
+  const now = Date.now();
+  const postures = state.maSeance.map((s) => ({ id: s.id, duree: s.duree }));
+  const existing = id && getSeance(id);
+  if (existing) {
+    Object.assign(existing, { nom, postures, modifieLe: now });
+    save();
+    return existing;
+  }
+  const seance = { id: "s" + now.toString(36), nom, postures, creeLe: now, modifieLe: now };
+  state.seancesPerso.unshift(seance);
+  save();
+  return seance;
+}
+export function deleteSeance(id) {
+  state.seancesPerso = state.seancesPerso.filter((s) => s.id !== id);
+  if (state.edition?.id === id) state.edition = null;
+  save();
+}
+export function duplicateSeance(id) {
+  const s = getSeance(id);
+  if (!s) return null;
+  const now = Date.now();
+  const copy = { ...structuredClone(s), id: "s" + now.toString(36), nom: `${s.nom} (copie)`, creeLe: now, modifieLe: now };
+  state.seancesPerso.splice(state.seancesPerso.indexOf(s) + 1, 0, copy);
+  save();
+  return copy;
+}
+// Charge une séance enregistrée dans le créateur pour la modifier
+export function editSeance(id) {
+  const s = getSeance(id);
+  if (!s) return;
+  state.maSeance = s.postures.map((p) => ({ ...p }));
+  state.edition = { id: s.id, nom: s.nom };
+  save();
+}
+// Postures d'une séance enregistrée (celles d'un livre supprimé sont ignorées)
+export function seanceEntries(s) {
+  return s.postures.map((x) => ({ posture: getPosture(x.id), duree: x.duree })).filter((e) => e.posture);
+}
+
+// --- Ma séance (créateur) ---
 export function inSeance(id) {
   return state.maSeance.some((s) => s.id === id);
 }

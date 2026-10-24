@@ -295,3 +295,37 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .method-txt { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .method-txt strong { font-family: var(--serif); font-size: 1.25rem; font-weight: 500; }
 .method-txt .muted { font-size: 0.82rem; }
+
+/* Navigation à 5 onglets */
+.tabbar a { padding: 7px 10px; font-size: 0.66rem; white-space: nowrap; }
+@media (max-width: 360px) { .tabbar a { padding: 7px 7px; font-size: 0.6rem; } }
+
+/* Créateur : enregistrement */
+.edit-banner { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 14px; margin: -4px 0 12px; background: color-mix(in srgb, var(--sage) 16%, transparent); color: var(--sage-deep); font-size: 0.88rem; font-weight: 600; }
+.edit-banner svg { width: 16px; height: 16px; flex: none; }
+.save-box { margin-top: 18px; padding: 16px; border-radius: 18px; background: color-mix(in srgb, var(--sage) 10%, var(--glass-strong)); border: 1px solid color-mix(in srgb, var(--sage) 30%, transparent); display: flex; flex-direction: column; gap: 10px; }
+.save-box label { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--sage-deep); }
+.save-box input { border: 1px solid var(--line); background: var(--paper); color: inherit; border-radius: 14px; padding: 12px 14px; font: inherit; font-family: var(--serif); font-size: 1.15rem; outline: none; }
+.save-box input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sage) 20%, transparent); }
+
+/* Mes séances */
+.saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.saved { overflow: hidden; display: flex; flex-direction: column; }
+.saved-strip { display: flex; height: 92px; position: relative; }
+.saved-strip .mini-art { flex: 1; height: 100%; }
+.saved-strip .mini-art + .mini-art { border-left: 2px solid var(--paper); }
+.saved-more { position: absolute; right: 10px; bottom: 8px; padding: 2px 9px; border-radius: 999px; background: var(--glass-strong); font-size: 0.75rem; font-weight: 700; }
+.saved-body { padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.saved-body h3 { font-size: 1.45rem; }
+.saved .dots { display: flex; gap: 4px; flex-wrap: wrap; margin: 4px 0; }
+.saved .dots span { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--sand) 70%, transparent); }
+.saved-actions { margin-top: 6px; }
+.saved-actions .icon-btn { width: 36px; height: 36px; }
+.saved-actions .icon-btn svg { width: 16px; height: 16px; }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--warn) 10%, transparent); font-size: 0.88rem; font-weight: 600; }
+.confirm[hidden], .saved-actions[hidden] { display: none; }
+.empty-saved { text-align: center; padding: 36px 22px; }
+.empty-saved p { max-width: 42ch; margin: 8px auto 0; }
+.empty-orb { width: 90px; height: 90px; margin: 0 auto 16px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--terra) 50%, var(--paper)), color-mix(in srgb, var(--sage) 70%, transparent)); animation: breathe 8s ease-in-out infinite; }
+.saved-chip { display: inline-flex; align-items: center; gap: 6px; }
+.saved-chip svg { width: 12px; height: 12px; }

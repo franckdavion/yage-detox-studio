@@ -9,6 +9,7 @@ Application web de yoga interactive : bibliothèque de postures, séances détox
 - **Sélecteur d'adaptabilité** : débutant, genoux, dos, hanches, nuque, épaules, chevilles, cyphose, grossesse, tension. Les conseils de supports s'affichent et les postures déconseillées sont signalées.
 - **Lecteur** : installation guidée, minuteur circulaire de 3 à 5 min, animation du souffle (inspire 4 s / expire 6 s, réglable), repères d'optimisation et visualisation lus à voix haute (Web Speech API, voix française), son de cloche entre les phases, gestion des deux côtés, écran maintenu allumé.
 - **Séances** : 5 programmes thématiques, générateur de séances selon le thème, la durée et le profil, et composition manuelle (ordre, durées).
+- **Mes séances** : enregistre les séances créées avec un nom, puis lance-les, modifie-les, duplique-les ou supprime-les depuis l'onglet dédié (sauvegarde dans le localStorage du navigateur).
 - Mode clair / sombre, installable sur mobile (manifest).
 
 ## Yoga sur chaise (deuxième méthode)

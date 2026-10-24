@@ -3,6 +3,7 @@ import { CONTRAINTES, MOMENTS, THEMES, PRINCIPES } from "./data/yin-yoga.js";
 import {
   state, save, books, allPostures, getPosture, allProgrammes,
   toggleContrainte, warningsFor, matchedAdaptations, inSeance, toggleSeance, BUILTIN_BOOKS,
+  savedSeances, getSeance, saveSeance, deleteSeance, duplicateSeance, editSeance, seanceEntries,
 } from "./store.js";
 import { esc, icon, toast, minutes, postureFigure, installImageFallbacks } from "./ui.js";
 import { openPlayer } from "./player.js";
@@ -11,7 +12,7 @@ import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "7 · yoga sur chaise";
+export const APP_VERSION = "8 · mes séances";
 const view = document.getElementById("view");
 installImageFallbacks();
 const filters = { moment: "", theme: "", q: "", adapte: false, livre: "" };
@@ -23,6 +24,7 @@ const routes = [
   [/^#?\/?$/, renderCatalogue, "catalogue"],
   [/^#\/posture\/(.+)$/, renderPosture, "catalogue"],
   [/^#\/seances$/, renderSeances, "seances"],
+  [/^#\/mes-seances$/, renderMesSeances, "mes-seances"],
   [/^#\/importer$/, renderImport, "importer"],
   [/^#\/profil$/, renderProfil, "profil"],
 ];
@@ -98,6 +100,8 @@ function renderCatalogue() {
           ${b.id === "yoga-chaise" ? '<span class="tag ok">Nouveau</span>' : ""}
         </button>`).join("")}
       </div>
+      ${savedSeances().length ? `<div class="section-head" style="margin-top:20px"><h2>Mes séances</h2><a class="muted" href="#/mes-seances">Tout voir</a></div>
+      <div class="filters">${savedSeances().slice(0, 6).map((s) => `<button class="chip saved-chip" data-play-saved="${s.id}">${icon("play")} ${esc(s.nom)}</button>`).join("")}</div>` : ""}
       ${bookList.some((b) => b.id === "yoga-chaise") ? `<div class="row" style="margin-top:12px">
         <button class="btn terra small" data-play-prog="chaise-complete">${icon("play")} Pause yoga sur chaise</button>
         <button class="btn ghost small" data-play-prog="chaise-express">Nuque & épaules · 5 min</button>
@@ -190,6 +194,12 @@ function handleCommon(e) {
     add.classList.toggle("in", added);
     add.innerHTML = icon(added ? "check" : "plus");
     toast(added ? "Ajoutée à ta séance" : "Retirée de ta séance");
+    return true;
+  }
+  const ps = e.target.closest("[data-play-saved]");
+  if (ps) {
+    const s = getSeance(ps.dataset.playSaved);
+    if (s) openPlayer(seanceEntries(s), { titre: s.nom });
     return true;
   }
   const pp = e.target.closest("[data-play-prog]");
@@ -348,8 +358,9 @@ function renderSeances() {
       <div class="row" style="margin-top:14px"><button class="btn terra" id="gen">Générer dans « Ma séance »</button></div>
     </section>
 
-    <section class="section glass panel">
-      <div class="section-head"><h2>Ma séance</h2><span class="muted">${mine.length ? minutes(totalSeconds(mine)) : ""}</span></div>
+    <section class="section glass panel" id="builder">
+      <div class="section-head"><h2>${state.edition ? "Modifier ma séance" : "Créer ma séance"}</h2><span class="muted">${mine.length ? minutes(totalSeconds(mine)) : ""}</span></div>
+      ${state.edition ? `<p class="edit-banner">${icon("edit")} Tu modifies « ${esc(state.edition.nom)} »</p>` : ""}
       ${mine.length ? `<ul class="seq-list">${mine.map((e, i) => `
         <li class="seq-item">
           <div><strong>${esc(e.posture.nom)}</strong>${e.posture.cotes ? ' <span class="muted">· 2 côtés</span>' : ""}
@@ -361,9 +372,17 @@ function renderSeances() {
             <button data-del="${i}" aria-label="Retirer">${icon("trash")}</button>
           </div>
         </li>`).join("")}</ul>
+        <div class="save-box">
+          <label for="seance-nom">Nom de la séance</label>
+          <input id="seance-nom" maxlength="60" autocomplete="off" placeholder="ex : Détox matinale douce" value="${esc(state.edition?.nom || "")}" />
+          <div class="row">
+            <button class="btn" id="save-seance">${icon("heart")} ${state.edition ? "Mettre à jour la séance" : "Enregistrer la séance"}</button>
+            ${state.edition ? `<button class="btn ghost small" id="save-copy">${icon("copy")} Enregistrer une copie</button>` : ""}
+          </div>
+        </div>
         <div class="row" style="margin-top:14px">
-          <button class="btn" id="play-mine">${icon("play")} Lancer ma séance</button>
-          <button class="btn ghost small" id="clear-mine">Vider</button>
+          <button class="btn ghost" id="play-mine">${icon("play")} Lancer sans enregistrer</button>
+          <button class="btn ghost small" id="clear-mine">${state.edition ? "Annuler la modification" : "Vider"}</button>
         </div>`
       : `<p class="muted">Ajoute des postures depuis la bibliothèque avec le bouton +, ou génère une séance ci-dessus.</p>`}
     </section>`;
@@ -389,8 +408,97 @@ function renderSeances() {
     renderSeances();
     toast(`Séance de ${seq.length} postures générée`);
   };
-  view.querySelector("#play-mine")?.addEventListener("click", () => openPlayer(mine, { titre: "Ma séance" }));
-  view.querySelector("#clear-mine")?.addEventListener("click", () => { state.maSeance = []; save(); renderSeances(); });
+  view.querySelector("#play-mine")?.addEventListener("click", () => openPlayer(mine, { titre: state.edition?.nom || "Ma séance" }));
+  view.querySelector("#clear-mine")?.addEventListener("click", () => { state.maSeance = []; state.edition = null; save(); renderSeances(); });
+  const nomInput = view.querySelector("#seance-nom");
+  const doSave = (asCopy) => {
+    const date = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+    const nom = (nomInput.value || "").trim() || `Ma séance du ${date}`;
+    const s = saveSeance(nom, asCopy ? null : state.edition?.id);
+    state.maSeance = [];
+    state.edition = null;
+    save();
+    toast(asCopy ? `Copie « ${s.nom} » enregistrée` : `« ${s.nom} » enregistrée dans Mes séances`);
+    location.hash = "#/mes-seances";
+  };
+  view.querySelector("#save-seance")?.addEventListener("click", () => doSave(false));
+  view.querySelector("#save-copy")?.addEventListener("click", () => doSave(true));
+  nomInput?.addEventListener("keydown", (e) => { if (e.key === "Enter") doSave(false); });
+  if (sessionStorage.getItem("yds.scrollBuilder")) {
+    sessionStorage.removeItem("yds.scrollBuilder");
+    requestAnimationFrame(() => view.querySelector("#builder")?.scrollIntoView({ block: "start" }));
+  }
+}
+
+// ---------- Mes séances ----------
+function renderMesSeances() {
+  const list = savedSeances();
+  const dateFr = (t) => new Date(t).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+  view.innerHTML = `
+    <section class="section">
+      <span class="eyebrow">Mon carnet</span>
+      <h1 style="margin-top:4px">Mes séances</h1>
+      <p class="muted" style="margin-top:8px">${list.length ? `${list.length} séance${list.length > 1 ? "s" : ""} enregistrée${list.length > 1 ? "s" : ""} sur cet appareil.` : "Tes séances personnalisées, prêtes à être lancées en un geste."}</p>
+    </section>
+    ${list.length ? `<section class="section saved-grid">
+      ${list.map((s) => {
+        const entries = seanceEntries(s);
+        const total = totalSeconds(entries);
+        const styles = [...new Set(entries.map((e) => e.posture.style))];
+        const flagged = entries.filter((e) => warningsFor(e.posture).length).length;
+        return `<article class="saved glass" data-id="${s.id}">
+          <div class="saved-strip">${entries.slice(0, 4).map((e) => postureFigure(e.posture, { cls: "mini-art" })).join("")}${entries.length > 4 ? `<span class="saved-more">+${entries.length - 4}</span>` : ""}</div>
+          <div class="saved-body">
+            <h3>${esc(s.nom)}</h3>
+            <p class="muted" style="font-size:.86rem">${entries.length} posture${entries.length > 1 ? "s" : ""} · ${minutes(total)} · ${styles.map((st) => (st === "chaise" ? "🪑 Chaise" : st === "yin" ? "🌙 Yin" : esc(st))).join(" + ")}</p>
+            <div class="dots">${entries.map((e) => `<span>${esc(e.posture.nom)}</span>`).join("")}</div>
+            ${flagged ? `<p style="font-size:.8rem;color:var(--warn)">${flagged} posture(s) à adapter à ton profil</p>` : ""}
+            <p class="muted" style="font-size:.75rem">Modifiée le ${dateFr(s.modifieLe)}</p>
+            <div class="row saved-actions">
+              <button class="btn small" data-act="play">${icon("play")} Lancer</button>
+              <button class="btn ghost small" data-act="edit">${icon("edit")} Modifier</button>
+              <button class="icon-btn" data-act="copy" aria-label="Dupliquer">${icon("copy")}</button>
+              <button class="icon-btn" data-act="ask-del" aria-label="Supprimer">${icon("trash")}</button>
+            </div>
+            <div class="confirm" hidden>
+              <span>Supprimer cette séance ?</span>
+              <button class="btn small terra" data-act="del">Supprimer</button>
+              <button class="btn ghost small" data-act="cancel">Garder</button>
+            </div>
+          </div>
+        </article>`;
+      }).join("")}
+    </section>` : `<section class="section glass panel empty-saved">
+      <div class="empty-orb" aria-hidden="true"></div>
+      <h2>Aucune séance enregistrée</h2>
+      <p class="muted">Compose une séance (ou génère-la), donne-lui un nom puis touche « Enregistrer la séance ».</p>
+      <div class="row" style="justify-content:center;margin-top:14px"><a class="btn" href="#/seances">${icon("plus")} Créer une séance</a></div>
+    </section>`}
+    ${list.length ? `<div class="row" style="margin-top:18px"><a class="btn ghost" href="#/seances">${icon("plus")} Créer une nouvelle séance</a></div>` : ""}`;
+
+  view.onchange = null;
+  view.onclick = (e) => {
+    const b = e.target.closest("[data-act]");
+    if (!b) return;
+    const card = b.closest(".saved");
+    const s = getSeance(card?.dataset.id);
+    if (!s) return;
+    const a = b.dataset.act;
+    if (a === "play") {
+      const entries = seanceEntries(s);
+      if (entries.length) openPlayer(entries, { titre: s.nom });
+      else toast("Cette séance ne contient plus de posture");
+    }
+    if (a === "edit") {
+      editSeance(s.id);
+      sessionStorage.setItem("yds.scrollBuilder", "1");
+      location.hash = "#/seances";
+    }
+    if (a === "copy") { duplicateSeance(s.id); toast("Séance dupliquée"); renderMesSeances(); }
+    if (a === "ask-del") { card.querySelector(".confirm").hidden = false; card.querySelector(".saved-actions").hidden = true; }
+    if (a === "cancel") { card.querySelector(".confirm").hidden = true; card.querySelector(".saved-actions").hidden = false; }
+    if (a === "del") { deleteSeance(s.id); toast("Séance supprimée"); renderMesSeances(); }
+  };
 }
 
 // ---------- Import ----------
