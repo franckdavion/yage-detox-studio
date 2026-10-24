@@ -18,7 +18,7 @@ import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "14 · roll-up";
+export const APP_VERSION = "15 · cartes cliquables";
 // Contrôle au démarrage : chaque étirement respecte le modèle (console du navigateur)
 verifierEtirements(POSTURES_ETIREMENTS, POSES);
 const view = document.getElementById("view");
@@ -118,7 +118,8 @@ function renderHub() {
     const p = getPosture(el.dataset.preview);
     if (p) stopViewAnims.push(mountPoseAnimation(el, p, { mode: "boucle" }));
   });
-  view.onclick = (e) => handleCommon(e);
+  // Ne pas renvoyer la valeur de handleCommon : un « false » renvoyé par onclick annulerait le lien de la carte
+  view.onclick = (e) => { handleCommon(e); };
   view.onchange = null;
 }
 
