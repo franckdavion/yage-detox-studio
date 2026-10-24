@@ -26,6 +26,10 @@ Séquence de 11 fiches (mise en condition + 10 postures) inspirée du *Petit gui
 
 Chaque étirement est déclaré avec le **modèle obligatoire** `defineEtirement()` (`js/data/modele-etirement.js`) : identité et zone, bienfaits, étapes synchronisées (texte TTS d'installation, de maintien et de relâchement), paramètres du personnage semi-3D et du minuteur. Le modèle est vérifié au démarrage (alertes « [Modèle étirement] » dans la console). La procédure d'ajout à partir d'un simple nom est décrite dans `CLAUDE.md`.
 
+## Pilates (cinquième méthode)
+
+15 exercices de Pilates au sol (préparation des abdominaux, nage, ciseaux, cygne, sirène, ballon…) classés par catégorie : **Core**, **Mobilité**, **Force**, **Stabilité** (`js/data/pilates.js`, fonction `definePilates`). Le lecteur compte les répétitions et le personnage semi-3D alterne entre la position de préparation (inspiration) et le mouvement (expiration), avec des **traînées de mouvement** sur les mains, les pieds et la tête. Pendant la séance : bouton **♀ / ♂** pour changer d'avatar, **visualiseur d'onde** qui s'anime avec la voix et le souffle, consignes vocales synchronisées (« Inspire pour préparer, expire pour… »), barre de progression, lecture / pause / suivant. Programmes : « Pilates découverte », « Centre solide », « Pilates complet ».
+
 ## Phase 2 — Ingestion universelle (amorcée)
 
 L'onglet **Importer** envoie un PDF ou des photos à l'API Claude (vision). L'IA détecte le style et extrait les postures au même format que la base Yin. Le lecteur s'adapte :
@@ -49,6 +53,9 @@ js/sequences.js         générateur de séances
 js/import.js            ingestion IA (PDF / images → JSON)
 js/store.js             état persistant (localStorage) et bibliothèque unifiée
 js/data/yin-yoga.js     base de données Yin (postures, programmes, principes)
+js/data/chaise.js, yeux.js, etirements.js, pilates.js   autres méthodes
+js/animation.js         personnage animé (poses, semi-3D, avatars, traînées)
+js/eyes.js              visage guide du yoga des yeux
 ```
 
 Aucune étape de build n'est nécessaire : HTML, CSS et modules JavaScript natifs.

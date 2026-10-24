@@ -9,12 +9,16 @@ import { esc, icon, toast, minutes, postureFigure, installImageFallbacks } from 
 import { openPlayer, closePlayer } from "./player.js";
 import { mountPoseAnimation, createCharacter, POSES } from "./animation.js";
 import { verifierEtirements } from "./data/modele-etirement.js";
-import { ZONES, POSTURES_ETIREMENTS } from "./data/etirements.js";
+import { ZONES as ZONES_ETIR, POSTURES_ETIREMENTS } from "./data/etirements.js";
+import { CATEGORIES_PILATES } from "./data/pilates.js";
+// Zones (étirements) et catégories (Pilates) partagent le même filtre
+const ZONES = { ...ZONES_ETIR, ...CATEGORIES_PILATES };
+const ZONES_PAR_LIVRE = { etirements: ZONES_ETIR, pilates: CATEGORIES_PILATES };
 import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "11 · modèle étirements";
+export const APP_VERSION = "12 · pilates";
 // Contrôle au démarrage : chaque étirement respecte le modèle (console du navigateur)
 verifierEtirements(POSTURES_ETIREMENTS, POSES);
 const view = document.getElementById("view");
@@ -59,13 +63,13 @@ function postureCard(p) {
   return `
     <a class="card glass" href="#/posture/${encodeURIComponent(p.id)}">
       <button class="add-fab ${added ? "in" : ""}" data-add="${esc(p.id)}" aria-label="${added ? "Retirer de" : "Ajouter à"} ma séance">${icon(added ? "check" : "plus")}</button>
-      ${p.etirement && !p.image ? `<div class="pfig card-art" data-char="${esc(p.id)}"></div>` : postureFigure(p, { cls: "card-art" })}
+      ${(p.etirement || p.pilates) && !p.image ? `<div class="pfig card-art" data-char="${esc(p.id)}"></div>` : postureFigure(p, { cls: "card-art" })}
       <div class="card-body">
         <span class="eyebrow">${esc(p.sanskrit)}</span>
         <h3>${esc(p.nom)}</h3>
         <span class="muted" style="font-size:.86rem">${esc(p.famille || "")}</span>
         <div class="card-meta">
-          <span class="tag">${p.mode === "flux" ? (p.cycle ? `${p.repetitions || 5} fois` : `${p.respirations || 5} resp.`) : p.duree < 120 ? `${p.duree} s` : minutes(p.duree)}${p.cotes ? " × 2" : ""}</span>
+          <span class="tag">${p.mode === "flux" ? (p.cycle ? `${p.repetitions || 5} fois` : p.pilates ? `${p.respirations} rép.` : `${p.respirations || 5} resp.`) : p.duree < 120 ? `${p.duree} s` : minutes(p.duree)}${p.cotes ? " × 2" : ""}</span>
           ${p.zone ? `<span class="tag ok">${ZONES[p.zone]?.emoji || ""} ${ZONES[p.zone]?.label || ""}</span>` : `<span class="tag">${NIVEAUX[p.niveau] || ""}</span>`}
           ${warn.length ? `<span class="tag warn">À éviter : ${esc(warn.map(label).join(", "))}</span>` : ""}
           ${!warn.length && matchedAdaptations(p).length ? `<span class="tag ok">Adaptation proposée</span>` : ""}
@@ -99,10 +103,10 @@ function renderCatalogue() {
       <div class="section-head"><h2>Mes méthodes</h2></div>
       <div class="methods">
         ${bookList.map((b) => `<button class="method glass ${filters.livre === b.id ? "on" : ""}" data-method="${esc(b.id)}">
-          <span class="method-icon">${b.style === "chaise" ? "🪑" : b.style === "yin" ? "🌙" : b.style === "yeux" ? "👁️" : b.style === "etirements" ? "🤸" : "📖"}</span>
+          <span class="method-icon">${b.style === "chaise" ? "🪑" : b.style === "yin" ? "🌙" : b.style === "yeux" ? "👁️" : b.style === "etirements" ? "🤸" : b.style === "pilates" ? "◎" : "📖"}</span>
           <span class="method-txt"><strong>${esc(b.titre)}</strong>
-            <span class="muted">${b.postures.length} fiches · ${b.style === "yeux" ? "contre la fatigue des écrans" : b.style === "etirements" ? "par zone, personnage 3D" : b.mode === "flux" ? "au rythme du souffle" : "tenues longues"}</span></span>
-          ${b.id === "etirements" ? '<span class="tag ok">Nouveau</span>' : ""}
+            <span class="muted">${b.postures.length} fiches · ${b.style === "yeux" ? "contre la fatigue des écrans" : b.style === "etirements" ? "par zone, personnage 3D" : b.style === "pilates" ? "15 exercices au tapis, avatar femme ou homme" : b.mode === "flux" ? "au rythme du souffle" : "tenues longues"}</span></span>
+          ${b.id === "pilates" ? '<span class="tag ok">Nouveau</span>' : ""}
         </button>`).join("")}
       </div>
       ${savedSeances().length ? `<div class="section-head" style="margin-top:20px"><h2>Mes séances</h2><a class="muted" href="#/mes-seances">Tout voir</a></div>
@@ -112,6 +116,7 @@ function renderCatalogue() {
         <button class="btn ghost small" data-play-prog="chaise-express">Nuque & épaules · 5 min</button>
         <button class="btn ghost small" data-play-prog="yeux-reposes">👁️ Yeux reposés · 5 min</button>
         <button class="btn ghost small" data-play-prog="etir-reveil">🤸 Réveil en douceur</button>
+        <button class="btn ghost small" data-play-prog="pil-decouverte">◎ Pilates découverte</button>
       </div>` : ""}
     </section>
 
@@ -126,7 +131,7 @@ function renderCatalogue() {
         ${Object.entries(THEMES).map(([k, t]) => chip("theme", k, `${t.emoji} ${t.label}`, filters.theme === k)).join("")}
       </div>
       ${bookList.length > 1 ? `<div class="filters" style="margin-top:8px">${chip("livre", "", "Tous les livres", !filters.livre)}${bookList.map((b) => chip("livre", b.id, b.titre, filters.livre === b.id)).join("")}</div>` : ""}
-      ${filters.livre === "etirements" ? `<div class="filters" style="margin-top:8px">${chip("zone", "", "Toutes les zones", !filters.zone)}${Object.entries(ZONES).map(([k, z]) => chip("zone", k, `${z.emoji} ${z.label}`, filters.zone === k)).join("")}</div>` : ""}
+      ${ZONES_PAR_LIVRE[filters.livre] ? `<div class="filters" style="margin-top:8px">${chip("zone", "", filters.livre === "pilates" ? "Toutes les catégories" : "Toutes les zones", !filters.zone)}${Object.entries(ZONES_PAR_LIVRE[filters.livre]).map(([k, z]) => chip("zone", k, `${z.emoji} ${z.label}`, filters.zone === k)).join("")}</div>` : ""}
       <label class="toggle-line" style="margin-top:12px">
         <input type="checkbox" id="adapte" ${filters.adapte ? "checked" : ""} />
         Masquer les postures déconseillées pour mon profil
@@ -265,7 +270,7 @@ function renderPosture(id) {
       <h1>${esc(p.nom)}</h1>
       <div class="sanskrit">${esc(p.sanskrit)}</div>
       <div class="facts">
-        <div class="fact"><b>Tenue</b>${p.mode === "flux" ? (p.cycle ? `${p.repetitions || 5} répétitions` : `${p.respirations || 5} respirations`) : p.duree < 120 ? `${p.duree} secondes` : minutes(p.duree)}${p.cotes ? " par côté" : ""}</div>
+        <div class="fact"><b>Tenue</b>${p.mode === "flux" ? (p.cycle ? `${p.repetitions || 5} répétitions` : p.pilates ? `${p.respirations} répétitions (1 par souffle)` : `${p.respirations || 5} respirations`) : p.duree < 120 ? `${p.duree} secondes` : minutes(p.duree)}${p.cotes ? " par côté" : ""}</div>
         <div class="fact"><b>${p.zone ? "Zone" : "Moment"}</b>${p.zone ? `${ZONES[p.zone]?.emoji} ${ZONES[p.zone]?.label}` : (p.moments || []).map((m) => MOMENTS[m]?.label).join(", ")}</div>
         <div class="fact"><b>Niveau</b>${NIVEAUX[p.niveau] || "—"}</div>
         <div class="fact"><b>Racines</b>${esc(p.racines || "—")}</div>
@@ -473,7 +478,7 @@ function renderMesSeances() {
           <div class="saved-strip">${entries.slice(0, 4).map((e) => postureFigure(e.posture, { cls: "mini-art" })).join("")}${entries.length > 4 ? `<span class="saved-more">+${entries.length - 4}</span>` : ""}</div>
           <div class="saved-body">
             <h3>${esc(s.nom)}</h3>
-            <p class="muted" style="font-size:.86rem">${entries.length} posture${entries.length > 1 ? "s" : ""} · ${minutes(total)} · ${styles.map((st) => (st === "chaise" ? "🪑 Chaise" : st === "yin" ? "🌙 Yin" : st === "yeux" ? "👁️ Yeux" : st === "etirements" ? "🤸 Étirements" : esc(st))).join(" + ")}</p>
+            <p class="muted" style="font-size:.86rem">${entries.length} posture${entries.length > 1 ? "s" : ""} · ${minutes(total)} · ${styles.map((st) => (st === "chaise" ? "🪑 Chaise" : st === "yin" ? "🌙 Yin" : st === "yeux" ? "👁️ Yeux" : st === "etirements" ? "🤸 Étirements" : st === "pilates" ? "◎ Pilates" : esc(st))).join(" + ")}</p>
             <div class="dots">${entries.map((e) => `<span>${esc(e.posture.nom)}</span>`).join("")}</div>
             ${flagged ? `<p style="font-size:.8rem;color:var(--warn)">${flagged} posture(s) à adapter à ton profil</p>` : ""}
             <p class="muted" style="font-size:.75rem">Modifiée le ${dateFr(s.modifieLe)}</p>

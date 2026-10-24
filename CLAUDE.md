@@ -72,5 +72,6 @@ defineEtirement({
 ## Autres méthodes
 
 - Yin : `js/data/yin-yoga.js` (photos dans `assets/postures/`, droits confirmés par l'utilisateur).
+- Pilates : `js/data/pilates.js` (`definePilates`, poses `pil…` dans `js/animation.js`).
 - Yoga sur chaise : `js/data/chaise.js` ; Yoga des yeux : `js/data/yeux.js` + visage guide `js/eyes.js`.
   Pour ces deux guides tiers : contenu reformulé, illustrations non reproduites.

@@ -3,6 +3,7 @@ import { POSTURES, PROGRAMMES, LIVRE } from "./data/yin-yoga.js";
 import { LIVRE_CHAISE, POSTURES_CHAISE, PROGRAMMES_CHAISE } from "./data/chaise.js";
 import { LIVRE_YEUX, POSTURES_YEUX, PROGRAMMES_YEUX } from "./data/yeux.js";
 import { LIVRE_ETIREMENTS, POSTURES_ETIREMENTS, PROGRAMMES_ETIREMENTS } from "./data/etirements.js";
+import { LIVRE_PILATES, POSTURES_PILATES, PROGRAMMES_PILATES } from "./data/pilates.js";
 
 const KEY = "yds.state.v1";
 const defaults = {
@@ -13,6 +14,7 @@ const defaults = {
   souffle: { inspire: 4, expire: 6 },
   ia: { cle: "", modele: "claude-sonnet-5-5" },
   lecteurVisuel: "personnage", // "personnage" | "photo"
+  avatar: "femme",           // "femme" | "homme" (personnage du lecteur)
   seancesPerso: [],         // séances enregistrées : { id, nom, postures: [{ id, duree }], creeLe, modifieLe }
   edition: null,            // séance en cours de modification dans le créateur : { id, nom }
 };
@@ -41,8 +43,9 @@ const baseBook = { ...LIVRE, mode: "statique", postures: POSTURES };
 const chaiseBook = { ...LIVRE_CHAISE, postures: POSTURES_CHAISE };
 const yeuxBook = { ...LIVRE_YEUX, postures: POSTURES_YEUX };
 const etirementsBook = { ...LIVRE_ETIREMENTS, postures: POSTURES_ETIREMENTS };
+const pilatesBook = { ...LIVRE_PILATES, postures: POSTURES_PILATES };
 // Livres intégrés à l'application (non supprimables) + livres importés
-export const BUILTIN_BOOKS = [baseBook, chaiseBook, yeuxBook, etirementsBook];
+export const BUILTIN_BOOKS = [baseBook, chaiseBook, yeuxBook, etirementsBook, pilatesBook];
 
 export function books() {
   return [...BUILTIN_BOOKS, ...state.livres];
@@ -60,7 +63,7 @@ export function getPosture(id) {
 
 export function allProgrammes() {
   const imported = state.livres.flatMap((b) => b.programmes || []);
-  return [...PROGRAMMES, ...PROGRAMMES_CHAISE, ...PROGRAMMES_YEUX, ...PROGRAMMES_ETIREMENTS, ...imported];
+  return [...PROGRAMMES, ...PROGRAMMES_CHAISE, ...PROGRAMMES_YEUX, ...PROGRAMMES_ETIREMENTS, ...PROGRAMMES_PILATES, ...imported];
 }
 
 // --- Profil d'adaptabilité ---

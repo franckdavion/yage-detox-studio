@@ -3,6 +3,13 @@
 // Aucune dépendance : SVG + requestAnimationFrame.
 import { zenIllustration } from "./ui.js";
 import { createEyeGuide } from "./eyes.js";
+import { state } from "./store.js";
+
+// Avatars : tenues dans la palette de l'app (sauge, terracotta, lin)
+const AVATARS = {
+  femme: { haut: ["#e0a688", "#ae6f52", "#c98b6b"], leg: ["#9aab8a", "#617256", "#7d8f6e"], leg2: ["#7f9070", "#55654b", "#66775a"], torse: 17, chignon: true },
+  homme: { haut: ["#93a483", "#56664b", "#6f8062"], leg: ["#b59a86", "#73594a", "#8f7462"], leg2: ["#97806f", "#5b4639", "#78604f"], torse: 19.5, chignon: false },
+};
 
 // Articulations : H tête, N épaules, P bassin, K/F genou/pied (jambe 1 et 2), E/W coude/main (bras 1 et 2)
 // Repère 320 × 200, sol à y = 158.
@@ -57,6 +64,38 @@ const P = {
   enfantBras: { H: [198, 150], N: [178, 146], P: [112, 138], K1: [150, 156], F1: [96, 157], K2: [154, 156], F2: [100, 157], E1: [214, 152], W1: [240, 155], E2: [216, 153], W2: [242, 156] },
   dosCreux: { H: [216, 94], N: [196, 112], P: [122, 110], K1: [122, 156], F1: [84, 157], K2: [126, 156], F2: [88, 157], E1: [196, 134], W1: [196, 156], E2: [200, 134], W2: [200, 156] },
   dosRond: { H: [204, 126], N: [194, 104], P: [124, 108], K1: [122, 156], F1: [84, 157], K2: [126, 156], F2: [88, 157], E1: [196, 132], W1: [196, 156], E2: [200, 132], W2: [200, 156] },
+  // --- Pilates ---
+  pilAssisBras: { H: [130, 68], N: [130, 88], P: [130, 146], K1: [176, 150], F1: [226, 154], K2: [172, 152], F2: [222, 156], E1: [152, 90], W1: [176, 90], E2: [108, 90], W2: [84, 90] },
+  pilAssisTorsion: { H: [126, 68], N: [130, 88], P: [130, 146], K1: [176, 150], F1: [226, 154], K2: [172, 152], F2: [222, 156], E1: [140, 86], W1: [150, 84], E2: [118, 92], W2: [102, 96] },
+  pilVentreBras: { H: [222, 146], N: [206, 152], P: [140, 152], K1: [100, 155], F1: [60, 155], K2: [102, 156], F2: [62, 156], E1: [226, 152], W1: [250, 152], E2: [228, 154], W2: [252, 154] },
+  pilNage: { H: [224, 142], N: [206, 150], P: [140, 152], K1: [100, 155], F1: [60, 155], K2: [100, 148], F2: [60, 140], E1: [226, 140], W1: [250, 132], E2: [228, 154], W2: [252, 154] },
+  pilCote: { H: [222, 128], N: [206, 148], P: [140, 150], K1: [104, 148], F1: [66, 146], K2: [104, 154], F2: [66, 156], E1: [196, 146], W1: [180, 156], E2: [214, 156], W2: [224, 132] },
+  pilCoteAvant: { H: [222, 128], N: [206, 148], P: [140, 150], K1: [116, 132], F1: [96, 116], K2: [104, 154], F2: [66, 156], E1: [196, 146], W1: [180, 156], E2: [214, 156], W2: [224, 132] },
+  pilCoteArriere: { H: [222, 128], N: [206, 148], P: [140, 150], K1: [100, 150], F1: [58, 152], K2: [104, 154], F2: [66, 156], E1: [196, 146], W1: [180, 156], E2: [214, 156], W2: [224, 132] },
+  pilDosMainsTete: { H: [78, 150], N: [96, 152], P: [162, 152], K1: [190, 124], F1: [212, 155], K2: [194, 126], F2: [216, 156], E1: [90, 132], W1: [80, 146], E2: [92, 134], W2: [82, 148] },
+  pilEnroule: { H: [94, 128], N: [112, 140], P: [162, 152], K1: [190, 124], F1: [212, 155], K2: [194, 126], F2: [216, 156], E1: [108, 118], W1: [90, 122], E2: [110, 120], W2: [92, 124] },
+  pilTable: { H: [96, 130], N: [110, 140], P: [162, 152], K1: [164, 118], F1: [188, 122], K2: [166, 120], F2: [190, 124], E1: [128, 132], W1: [150, 124], E2: [130, 134], W2: [152, 126] },
+  pilJambeIsolee: { H: [96, 130], N: [110, 140], P: [162, 152], K1: [146, 118], F1: [166, 126], K2: [206, 138], F2: [246, 124], E1: [126, 130], W1: [146, 120], E2: [128, 132], W2: [148, 122] },
+  pilAssisGenoux: { H: [128, 70], N: [130, 90], P: [130, 146], K1: [170, 118], F1: [190, 156], K2: [166, 120], F2: [186, 157], E1: [150, 108], W1: [168, 116], E2: [148, 110], W2: [166, 118] },
+  pilAssisGenouxBras: { H: [136, 74], N: [134, 92], P: [130, 146], K1: [170, 118], F1: [190, 156], K2: [166, 120], F2: [186, 157], E1: [154, 100], W1: [180, 98], E2: [152, 102], W2: [178, 100] },
+  pilRoulementArriere: { H: [102, 82], N: [110, 100], P: [134, 148], K1: [170, 118], F1: [190, 156], K2: [166, 120], F2: [186, 157], E1: [90, 104], W1: [68, 110], E2: [134, 100], W2: [160, 98] },
+  pilVentreBrasCorps: { H: [224, 148], N: [206, 152], P: [140, 152], K1: [100, 155], F1: [60, 155], K2: [102, 156], F2: [62, 156], E1: [184, 154], W1: [162, 155], E2: [186, 155], W2: [164, 156] },
+  pilBrasse: { H: [222, 126], N: [204, 140], P: [140, 152], K1: [100, 155], F1: [60, 155], K2: [102, 156], F2: [62, 156], E1: [182, 144], W1: [160, 148], E2: [184, 145], W2: [162, 149] },
+  pilAssisCote: { H: [150, 78], N: [150, 96], P: [150, 148], K1: [184, 146], F1: [164, 156], K2: [188, 150], F2: [168, 157], E1: [166, 120], W1: [182, 140], E2: [132, 124], W2: [120, 156] },
+  pilFlexionLaterale: { H: [132, 76], N: [128, 96], P: [160, 118], K1: [186, 138], F1: [210, 156], K2: [188, 140], F2: [212, 157], E1: [116, 70], W1: [104, 50], E2: [122, 126], W2: [118, 156] },
+  pilBoule: { H: [156, 94], N: [146, 108], P: [150, 146], K1: [176, 110], F1: [180, 138], K2: [178, 112], F2: [182, 140], E1: [164, 124], W1: [176, 124], E2: [166, 126], W2: [178, 126] },
+  pilBouleArriere: { H: [112, 150], N: [128, 150], P: [160, 136], K1: [166, 104], F1: [186, 112], K2: [168, 106], F2: [188, 114], E1: [150, 124], W1: [164, 112], E2: [152, 126], W2: [166, 114] },
+  pilJambesCiel: { H: [96, 130], N: [110, 140], P: [162, 152], K1: [164, 112], F1: [166, 70], K2: [166, 112], F2: [168, 70], E1: [130, 146], W1: [150, 144], E2: [132, 147], W2: [152, 145] },
+  pilCiseaux: { H: [96, 130], N: [110, 140], P: [162, 152], K1: [150, 112], F1: [134, 74], K2: [198, 140], F2: [234, 130], E1: [124, 124], W1: [146, 104], E2: [126, 126], W2: [148, 106] },
+  pilVentreMains: { H: [224, 148], N: [206, 152], P: [140, 152], K1: [100, 155], F1: [60, 155], K2: [102, 156], F2: [62, 156], E1: [196, 140], W1: [204, 156], E2: [198, 142], W2: [206, 157] },
+  pilCygne: { H: [212, 100], N: [196, 118], P: [140, 152], K1: [100, 155], F1: [60, 155], K2: [102, 156], F2: [62, 156], E1: [198, 140], W1: [206, 156], E2: [200, 141], W2: [208, 157] },
+  pilAppuiAvantBras: { H: [104, 98], N: [108, 116], P: [150, 150], K1: [184, 122], F1: [206, 156], K2: [186, 124], F2: [208, 157], E1: [104, 150], W1: [124, 155], E2: [106, 151], W2: [126, 156] },
+  pilAppuiJambesHaut: { H: [104, 98], N: [108, 116], P: [150, 150], K1: [184, 118], F1: [214, 88], K2: [186, 120], F2: [216, 90], E1: [104, 150], W1: [124, 155], E2: [106, 151], W2: [126, 156] },
+  pilAppuiJambesBas: { H: [104, 98], N: [108, 116], P: [150, 150], K1: [188, 134], F1: [226, 124], K2: [190, 136], F2: [228, 126], E1: [104, 150], W1: [124, 155], E2: [106, 151], W2: [126, 156] },
+  pilPlancheBas: { H: [214, 120], N: [196, 126], P: [148, 130], K1: [112, 141], F1: [80, 154], K2: [114, 142], F2: [82, 155], E1: [180, 146], W1: [198, 156], E2: [182, 147], W2: [200, 157] },
+  pilPlanche: { H: [216, 100], N: [198, 108], P: [148, 118], K1: [112, 136], F1: [80, 154], K2: [114, 137], F2: [82, 155], E1: [199, 132], W1: [200, 156], E2: [201, 133], W2: [202, 157] },
+  pilSireneHaut: { H: [152, 78], N: [150, 96], P: [150, 148], K1: [184, 146], F1: [164, 156], K2: [188, 150], F2: [168, 157], E1: [156, 62], W1: [158, 36], E2: [160, 124], W2: [170, 150] },
+  pilSirene: { H: [176, 86], N: [164, 100], P: [150, 148], K1: [184, 146], F1: [164, 156], K2: [188, 150], F2: [168, 157], E1: [182, 70], W1: [204, 64], E2: [174, 128], W2: [178, 152] },
   banane: { H: [70, 138], N: [92, 146], P: [162, 152], K1: [200, 148], F1: [238, 140], K2: [202, 150], F2: [240, 142], E1: [70, 120], W1: [52, 108], E2: [74, 122], W2: [56, 110] },
 };
 
@@ -126,6 +165,7 @@ const PAR_FAMILLE = [
 ];
 // Noms des poses disponibles pour le personnage (utilisés par le modèle d'étirement)
 export const POSES = Object.keys(P);
+export const AVATAR_LABELS = { femme: "Avatar femme", homme: "Avatar homme" };
 
 export function posesFor(p) {
   // Modèle d'étirement : les poses sont déclarées dans la fiche elle-même
@@ -170,7 +210,8 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
   for (const k in end) deep[k] = [...end[k]];
   for (const k of ["H", "N", "E1", "E2", "W1", "W2"]) deep[k] = [end[k][0] + (end.H[0] > end.P[0] ? 3 : -3) * (k === "H" ? 1 : 0.6), end[k][1] + 3.5];
 
-  const s3d = !!posture.etirement; // rendu semi-3D (volumes, reflets, ombre portée)
+  const s3d = !!(posture.etirement || posture.pilates); // rendu semi-3D (volumes, reflets, ombre portée)
+  const AV = AVATARS[state.avatar] || AVATARS.femme;
   const gid = "c" + (++uid3d);
   const hl = (name, w) => (s3d ? `<path data-k="${name}H" stroke="#fff" stroke-opacity=".32" stroke-width="${w}" transform="translate(-1.3 -1.7)"/>` : "");
   const paint = (flat, grad) => (s3d ? `url(#${gid}${grad})` : flat);
@@ -181,20 +222,21 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
         ${s3d ? `<defs>
           <filter id="${gid}ds" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="1.6" dy="3" stdDeviation="2.2" flood-color="#3d2f26" flood-opacity=".28"/></filter>
           <filter id="${gid}blur"><feGaussianBlur stdDeviation="4"/></filter>
-          <linearGradient id="${gid}haut" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0a688"/><stop offset="1" stop-color="#ae6f52"/></linearGradient>
-          <linearGradient id="${gid}leg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9aab8a"/><stop offset="1" stop-color="#617256"/></linearGradient>
-          <linearGradient id="${gid}leg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7f9070"/><stop offset="1" stop-color="#55654b"/></linearGradient>
+          <linearGradient id="${gid}haut" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${AV.haut[0]}"/><stop offset="1" stop-color="${AV.haut[1]}"/></linearGradient>
+          <linearGradient id="${gid}leg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${AV.leg[0]}"/><stop offset="1" stop-color="${AV.leg[1]}"/></linearGradient>
+          <linearGradient id="${gid}leg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${AV.leg2[0]}"/><stop offset="1" stop-color="${AV.leg2[1]}"/></linearGradient>
           <linearGradient id="${gid}peau" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7e0d0"/><stop offset="1" stop-color="#dcb39a"/></linearGradient>
           <linearGradient id="${gid}peau2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8c6b0"/><stop offset="1" stop-color="#c99f86"/></linearGradient>
           <radialGradient id="${gid}tete" cx=".36" cy=".32" r=".75"><stop offset="0" stop-color="#fbe7da"/><stop offset="1" stop-color="#ddb39b"/></radialGradient>
           <radialGradient id="${gid}cheveux" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#6b5446"/><stop offset="1" stop-color="#3a2c24"/></radialGradient>
-          <radialGradient id="${gid}hanche" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#9aab8a"/><stop offset="1" stop-color="#5c6c51"/></radialGradient>
+          <radialGradient id="${gid}hanche" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${AV.leg[0]}"/><stop offset="1" stop-color="${AV.leg[1]}"/></radialGradient>
           <linearGradient id="${gid}mur" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#efe6da"/><stop offset="1" stop-color="#d8cbbb"/></linearGradient>
         </defs>` : ""}
         <circle data-k="aura" r="40" fill="#fbf8f3" opacity=".25"/>
         ${s3d ? `<ellipse data-k="shadow" ry="5" fill="#2f2a25" opacity=".22" filter="url(#${gid}blur)"/>` : ""}
         ${s3d && posture.accessoire === "mur" ? `<rect x="224" y="12" width="14" height="148" rx="3" fill="url(#${gid}mur)"/><rect x="224" y="12" width="3" height="148" fill="#fff" opacity=".35"/>` : ""}
         <rect data-k="mat" rx="2.5" height="5" fill="${C.tapis}" opacity=".35"/>
+        ${posture.pilates ? `<g class="trails" fill="none" stroke="#fbf8f3" stroke-linecap="round" stroke-linejoin="round"><path data-k="trailW" stroke-width="3.2" stroke-opacity=".38"/><path data-k="trailF" stroke-width="3.6" stroke-opacity=".32"/><path data-k="trailH" stroke-width="3" stroke-opacity=".26"/></g>` : ""}
         ${s3d ? `<rect data-k="matTop" rx="2.5" height="3" fill="#b5c4a5" opacity=".7"/>` : ""}
         ${posture.chaise ? `<g class="chair" stroke-linecap="round" stroke-linejoin="round">
           <path d="M100 116L94 158M140 116L146 158M106 116L110 152" stroke="#a8927c" stroke-width="3.5" fill="none"/>
@@ -203,14 +245,14 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
         </g>` : ""}
         <g ${s3d ? `filter="url(#${gid}ds)"` : ""}>
         <g stroke-linecap="round" stroke-linejoin="round" fill="none">
-          <path data-k="leg2" stroke="${paint(C.leggingOmbre, "leg2")}" stroke-width="11"/>
+          <path data-k="leg2" stroke="${paint(AV.leg2[2], "leg2")}" stroke-width="11"/>
           <path data-k="arm2" stroke="${paint(C.peauOmbre, "peau2")}" stroke-width="7"/>
           <circle data-k="foot2" r="4.2" fill="${paint(C.peauOmbre, "peau2")}" stroke="none"/>
           <circle data-k="hand2" r="3.6" fill="${paint(C.peauOmbre, "peau2")}" stroke="none"/>
-          <path data-k="torso" stroke="${paint(C.haut, "haut")}" stroke-width="17"/>
+          <path data-k="torso" stroke="${paint(AV.haut[2], "haut")}" stroke-width="${AV.torse}"/>
           ${hl("torso", 5)}
-          <circle data-k="hips" r="9" fill="${paint(C.legging, "hanche")}" stroke="none"/>
-          <path data-k="leg1" stroke="${paint(C.legging, "leg")}" stroke-width="11.5"/>
+          <circle data-k="hips" r="9" fill="${paint(AV.leg[2], "hanche")}" stroke="none"/>
+          <path data-k="leg1" stroke="${paint(AV.leg[2], "leg")}" stroke-width="11.5"/>
           ${hl("leg1", 3.5)}
           <circle data-k="foot1" r="4.4" fill="${paint(C.peau, "peau")}" stroke="none"/>
           <path data-k="neck" stroke="${paint(C.peau, "peau")}" stroke-width="6"/>
@@ -219,8 +261,8 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
           <circle data-k="hand1" r="3.8" fill="${paint(C.peau, "peau")}" stroke="none"/>
           ${posture.accessoire === "sangle" ? `<path data-k="strap" stroke="#c98b6b" stroke-width="2.4" fill="none"/>` : ""}
         </g>
-        <circle data-k="bun" r="6" fill="${paint(C.cheveux, "cheveux")}"/>
-        <circle data-k="hair" r="12" fill="${paint(C.cheveux, "cheveux")}"/>
+        <circle data-k="bun" r="${AV.chignon ? 6 : 0}" fill="${paint(C.cheveux, "cheveux")}"/>
+        <circle data-k="hair" r="${AV.chignon ? 12 : 11.3}" fill="${paint(C.cheveux, "cheveux")}"/>
         <circle data-k="head" r="10.5" fill="${paint(C.peau, "tete")}"/>
         ${s3d ? `<circle data-k="headHL" r="3.2" fill="#fff" opacity=".35"/>` : ""}
         <circle data-k="cheek" r="2.6" fill="${C.joue}" opacity=".55"/>
@@ -244,7 +286,25 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
   if (k.matTop) { k.matTop.setAttribute("x", f1(x0 + 6)); k.matTop.setAttribute("y", "157.5"); k.matTop.setAttribute("width", f1(x1 - x0 - 12)); }
   let lastLabel = null;
 
+  // Traînées de mouvement (Pilates) : trajectoire récente des mains, des pieds et de la tête
+  const hist = [];
+  let lastT = -1, lastJ = null;
+  function updateTrails(t) {
+    if (!k.trailW || !lastJ) return;
+    if (t < lastT) hist.length = 0;
+    if (t - lastT >= 45 || t < lastT) {
+      lastT = t;
+      hist.push({ W: lastJ.W1, F: lastJ.F1, H: lastJ.H });
+      if (hist.length > 16) hist.shift();
+    }
+    const line = (key) => (hist.length > 1 ? "M" + hist.map((h) => `${f1(h[key][0])} ${f1(h[key][1])}`).join("L") : "");
+    k.trailW.setAttribute("d", line("W"));
+    k.trailF.setAttribute("d", line("F"));
+    k.trailH.setAttribute("d", line("H"));
+  }
+
   function draw(j, { breath = 0.5, blink = false, aura = 0.25 } = {}) {
+    lastJ = j;
     // Torse courbe, cou, membres
     const up = N2([j.N[0] - j.P[0], j.N[1] - j.P[1]]);
     const neck = [j.N[0] + up[0] * 4, j.N[1] + up[1] * 4];
@@ -253,7 +313,7 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
     const chest = (breath - 0.5) * 2.2; // la poitrine s'ouvre à l'inspiration
     const c = [mid[0] + per[0] * (4 + chest), mid[1] + per[1] * (4 + chest)];
     k.torso.setAttribute("d", `M${f1(j.N[0])} ${f1(j.N[1])}Q${f1(c[0])} ${f1(c[1])} ${f1(j.P[0])} ${f1(j.P[1])}`);
-    k.torso.setAttribute("stroke-width", f1(17 + chest * 0.8));
+    k.torso.setAttribute("stroke-width", f1(AV.torse + chest * 0.8));
     k.neck.setAttribute("d", seg(neck, lerp(neck, j.H, 0.55)));
     k.leg1.setAttribute("d", seg(j.P, j.K1, j.F1));
     k.leg2.setAttribute("d", seg(j.P, j.K2, j.F2));
@@ -304,7 +364,11 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
 
   // État piloté : phase ("installation" | "tenue" | "sortie" | "fin"), t (ms dans la phase),
   // length (durée totale de la phase si connue), breath (0 → expiré, 1 → inspiré)
-  function render({ phase, t = 0, length = 0, breath = null, inhale = null }) {
+  function render(st) {
+    renderInner(st);
+    updateTrails(st.t || 0);
+  }
+  function renderInner({ phase, t = 0, length = 0, breath = null, inhale = null }) {
     const blink = phase !== "fin" && t % 6200 > 6050;
     if (phase === "installation") {
       const T0 = 1400, T1 = 4600;

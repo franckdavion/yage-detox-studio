@@ -331,3 +331,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .saved-chip svg { width: 12px; height: 12px; }
 .dial-visual .eye-guide .pose-figure { inset: 4% 4% 0; width: 92%; height: 96%; }
 .card-art .pose-label { display: none; }
+
+/* Lecteur : visualiseur d'onde vocale */
+.voicewave { display: flex; align-items: center; justify-content: center; gap: 3px; height: 26px; margin-top: -4px; }
+.voicewave span { width: 3px; height: 100%; border-radius: 3px; background: var(--sage); opacity: 0.55; transform: scaleY(0.15); transform-origin: center; transition: transform 0.12s linear; }
+.voicewave.talking span { background: var(--terra); opacity: 0.85; }
+.avatar-btn { font-size: 1.15rem; font-weight: 700; color: var(--sage-deep); }
+.pose-anim .trails path { filter: blur(0.4px); }

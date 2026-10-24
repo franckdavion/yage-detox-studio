@@ -1,7 +1,7 @@
 // Lecteur de séance : installation guidée → tenue minutée avec souffle → sortie → posture suivante.
 // Deux modes : « statique » (Yin, minuteur long) et « flux » (styles dynamiques, compteur de respirations).
 import { state, save, matchedAdaptations } from "./store.js";
-import { speak, stopSpeaking, pauseSpeaking, resumeSpeaking } from "./tts.js";
+import { speak, stopSpeaking, pauseSpeaking, resumeSpeaking, isSpeaking } from "./tts.js";
 import { esc, fmt, icon, postureFigure } from "./ui.js";
 import { createCharacter } from "./animation.js";
 
@@ -62,6 +62,7 @@ class Session {
         <button class="icon-btn" data-act="close" aria-label="Fermer le lecteur">${icon("close")}</button>
         <span class="eyebrow">${esc(this.titre)}</span>
         <div class="row" style="gap:6px">
+        <button class="icon-btn avatar-btn" data-act="avatar" aria-label="Changer d'avatar (femme / homme)" title="Avatar femme / homme">${state.avatar === "homme" ? "♂" : "♀"}</button>
         <button class="icon-btn" data-act="visual" aria-label="Basculer personnage / photo" title="Personnage ou photo">${icon(state.lecteurVisuel === "photo" ? "person" : "image")}</button>
         <button class="icon-btn" data-act="voice" aria-label="Activer ou couper la voix">${icon(state.voix.active ? "voice" : "mute")}</button>
         </div>
@@ -88,6 +89,7 @@ class Session {
           <div class="dial-time" data-ref="time">—</div>
           <div class="dial-breath" data-ref="breath"></div>
         </div>
+        <div class="voicewave" data-ref="wave" aria-hidden="true">${"<span></span>".repeat(18)}</div>
         <p class="cue-text" data-ref="cue" aria-live="polite"></p>
         <div class="controls">
           <button class="ctrl" data-act="prev" aria-label="Posture précédente">${icon("prev")}</button>
@@ -107,6 +109,14 @@ class Session {
       if (a === "toggle") this.togglePause();
       if (a === "next") this.skip();
       if (a === "prev") this.back();
+      if (a === "avatar") {
+        state.avatar = state.avatar === "homme" ? "femme" : "homme";
+        save();
+        b.textContent = state.avatar === "homme" ? "♂" : "♀";
+        this.refs.visual.dataset.key = "";
+        this.setVisual(this.phase === "fin" ? "sortie" : this.phase);
+        this.renderCharacter();
+      }
       if (a === "visual") {
         state.lecteurVisuel = state.lecteurVisuel === "photo" ? "personnage" : "photo";
         save();
@@ -314,6 +324,22 @@ class Session {
   update() {
     this.updateTimer();
     this.renderCharacter();
+    this.updateWave();
+  }
+
+  // Visualiseur d'onde : s'anime quand la voix parle, ondule doucement au rythme du souffle sinon
+  updateWave() {
+    const bars = this.refs.wave?.children;
+    if (!bars) return;
+    const talking = isSpeaking();
+    const b = this.phase === "tenue" ? this.breathEased ?? 0.5 : 0.35;
+    const t = this.elapsed / 1000;
+    for (let i = 0; i < bars.length; i++) {
+      const wave = (Math.sin(t * 2.2 + i * 0.55) + 1) / 2;
+      const h = talking ? 0.25 + 0.75 * Math.abs(Math.sin(t * 9 + i * 1.7) * Math.cos(t * 4.3 + i)) : 0.12 + 0.35 * b * wave;
+      bars[i].style.transform = `scaleY(${h.toFixed(3)})`;
+    }
+    this.refs.wave.classList.toggle("talking", talking);
   }
 
   updateTimer() {
@@ -353,7 +379,10 @@ class Session {
       const rythme = posture.souffle === "alterne"; // mouvement guidé à chaque respiration
       if ((rythme ? c < (posture.respirations || 5) : c > 0 && c < 4) && !this.spoken.has(key)) {
         this.spoken.add(key);
-        speak(inhale ? "Inspire…" : "Expire, longuement…");
+        // Pilates : consigne complète sur les deux premières respirations, puis rappel court
+        const sc = posture.souffleCues;
+        if (sc) speak(c < 2 ? (inhale ? sc.inspire : sc.expire) : inhale ? "Inspire." : "Expire.");
+        else speak(inhale ? "Inspire…" : "Expire, longuement…");
       }
       // Repères d'optimisation, visualisation, annonce de fin
       const opt = posture.optimisation || [];
