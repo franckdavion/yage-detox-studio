@@ -11,6 +11,10 @@ Application web de yoga interactive : bibliothèque de postures, séances détox
 - **Séances** : 5 programmes thématiques, générateur de séances selon le thème, la durée et le profil, et composition manuelle (ordre, durées).
 - Mode clair / sombre, installable sur mobile (manifest).
 
+## Yoga sur chaise (deuxième méthode)
+
+Séquence de 11 fiches (mise en condition + 10 postures) inspirée du *Petit guide de yoga sur chaise* (Utopies / YesWeGreen, 2021). Les consignes sont reformulées ; ni le texte ni les illustrations du guide ne sont reproduits. Le lecteur passe en mode « flux » (compteur de respirations) et le personnage s'assoit sur une chaise ; pour les mouvements rythmés (bras, dos creux / dos rond), il alterne entre deux positions au rythme exact du souffle. Programmes : « Pause yoga sur chaise » et « Nuque & épaules express ».
+
 ## Phase 2 — Ingestion universelle (amorcée)
 
 L'onglet **Importer** envoie un PDF ou des photos à l'API Claude (vision). L'IA détecte le style et extrait les postures au même format que la base Yin. Le lecteur s'adapte :

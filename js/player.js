@@ -212,7 +212,7 @@ class Session {
       const second = cote === "gauche";
       const adapt = matchedAdaptations(posture).map(([, t]) => t);
       const lines = second
-        ? [`Côté gauche. Reprends ${posture.nom} en miroir.`, "Prends le temps de bien t'installer."]
+        ? [posture.secondCote || `Côté gauche. Reprends ${posture.nom} en miroir.`, "Prends le temps de bien t'installer."]
         : [`${posture.nom}.`, ...posture.entree, ...adapt.map((t) => "Pour toi : " + t)];
       r.cue.textContent = second ? "Même posture, de l'autre côté, en miroir." : posture.entree[0];
       this.cueQueue = second ? [] : posture.entree.slice(1);
@@ -344,7 +344,8 @@ class Session {
       // Guidage du souffle à voix haute sur les trois premiers cycles
       const c = Math.floor(this.elapsed / cycle);
       const key = `b${c}${inhale ? "i" : "e"}`;
-      if (c > 0 && c < 4 && !this.spoken.has(key)) {
+      const rythme = posture.souffle === "alterne"; // mouvement guidé à chaque respiration
+      if ((rythme ? c < (posture.respirations || 5) : c > 0 && c < 4) && !this.spoken.has(key)) {
         this.spoken.add(key);
         speak(inhale ? "Inspire…" : "Expire, longuement…");
       }

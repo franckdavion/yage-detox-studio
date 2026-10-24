@@ -30,6 +30,19 @@ const P = {
   grenouille: { H: [214, 140], N: [196, 136], P: [122, 132], K1: [126, 156], F1: [92, 156], K2: [130, 156], F2: [96, 156], E1: [196, 156], W1: [220, 156], E2: [198, 156], W2: [224, 157] },
   diamant: { H: [160, 62], N: [160, 80], P: [158, 140], K1: [196, 156], F1: [150, 157], K2: [198, 157], F2: [152, 158], E1: [170, 108], W1: [186, 134], E2: [172, 110], W2: [188, 136] },
   heros: { H: [80, 142], N: [98, 146], P: [150, 150], K1: [200, 156], F1: [154, 157], K2: [202, 157], F2: [156, 158], E1: [118, 152], W1: [140, 155], E2: [120, 153], W2: [142, 156] },
+  // --- Sur chaise (assise à droite du dossier, regard vers la droite) ---
+  chaiseAssis: { H: [128, 50], N: [128, 68], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [136, 88], W1: [156, 104], E2: [134, 90], W2: [152, 106] },
+  chaiseBrasHaut: { H: [130, 50], N: [128, 68], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [136, 40], W1: [134, 16], E2: [132, 42], W2: [132, 18] },
+  chaiseMainsCoeur: { H: [130, 50], N: [128, 68], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [142, 92], W1: [146, 76], E2: [140, 94], W2: [144, 78] },
+  chaiseBrasDevant: { H: [138, 58], N: [130, 70], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [152, 70], W1: [176, 70], E2: [150, 72], W2: [174, 72] },
+  chaiseLateral: { H: [118, 54], N: [124, 70], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [118, 44], W1: [104, 24], E2: [116, 46], W2: [102, 26] },
+  chaiseNuque: { H: [140, 66], N: [130, 72], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [146, 56], W1: [132, 54], E2: [144, 58], W2: [130, 56] },
+  chaiseCoeur: { H: [132, 48], N: [130, 66], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [114, 84], W1: [108, 100], E2: [116, 86], W2: [110, 102] },
+  chaiseDosCreux: { H: [142, 48], N: [134, 68], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [150, 90], W1: [162, 106], E2: [148, 92], W2: [160, 108] },
+  chaiseDosRond: { H: [150, 84], N: [140, 74], P: [122, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [154, 92], W1: [162, 106], E2: [152, 94], W2: [160, 108] },
+  chaiseTorsion: { H: [124, 50], N: [126, 68], P: [124, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [112, 88], W1: [104, 108], E2: [140, 90], W2: [158, 104] },
+  chaiseSciatique: { H: [140, 54], N: [134, 70], P: [124, 106], K1: [154, 94], F1: [164, 110], K2: [160, 110], F2: [164, 157], E1: [148, 90], W1: [154, 96], E2: [146, 94], W2: [162, 108] },
+  chaiseRelax: { H: [164, 128], N: [154, 104], P: [122, 106], K1: [164, 108], F1: [168, 156], K2: [160, 110], F2: [164, 157], E1: [162, 128], W1: [164, 152], E2: [160, 130], W2: [162, 154] },
   banane: { H: [70, 138], N: [92, 146], P: [162, 152], K1: [200, 148], F1: [238, 140], K2: [202, 150], F2: [240, 142], E1: [70, 120], W1: [52, 108], E2: [74, 122], W2: [56, 110] },
 };
 
@@ -60,6 +73,18 @@ const PAR_POSTURE = {
   cloche: ["debout", "cloche"],
   "torsion-dos": ["dosGenouxPlies", "torsion"],
   "chat-queue": ["dosGenouxPlies", "torsion"],
+  // Chaise : [départ, posture, posture à l'expiration (facultatif, pour les mouvements rythmés)]
+  "chaise-assise": ["chaiseAssis", "chaiseAssis"],
+  "chaise-ouverture-bras": ["chaiseAssis", "chaiseBrasHaut", "chaiseMainsCoeur"],
+  "chaise-trapezes": ["chaiseAssis", "chaiseBrasDevant"],
+  "chaise-etirement-haut": ["chaiseAssis", "chaiseBrasHaut", "chaiseAssis"],
+  "chaise-lateral": ["chaiseAssis", "chaiseLateral"],
+  "chaise-nuque": ["chaiseAssis", "chaiseNuque"],
+  "chaise-coeur": ["chaiseAssis", "chaiseCoeur"],
+  "chaise-dos-creux-rond": ["chaiseAssis", "chaiseDosCreux", "chaiseDosRond"],
+  "chaise-torsion": ["chaiseAssis", "chaiseTorsion"],
+  "chaise-sciatique": ["chaiseAssis", "chaiseSciatique"],
+  "chaise-relaxation": ["chaiseAssis", "chaiseRelax"],
 };
 const PAR_FAMILLE = [
   [/inversion|mur/, ["dosGenouxPlies", "jambesMur"]],
@@ -71,7 +96,7 @@ const PAR_FAMILLE = [
   [/avant/, ["assisJambesTendues", "flexionAvant"]],
 ];
 export function posesFor(p) {
-  const pair = PAR_POSTURE[p.id] || PAR_FAMILLE.find(([re]) => re.test(`${p.famille || ""}`.toLowerCase()))?.[1] || ["assisJambesTendues", "assisTailleur"];
+  const pair = PAR_POSTURE[p.id] || (p.chaise ? ["chaiseAssis", "chaiseBrasHaut"] : null) || PAR_FAMILLE.find(([re]) => re.test(`${p.famille || ""}`.toLowerCase()))?.[1] || ["assisJambesTendues", "assisTailleur"];
   return pair.map((k) => P[k]);
 }
 
@@ -100,7 +125,7 @@ const seg = (...pts) => "M" + pts.map((q) => `${f1(q[0])} ${f1(q[1])}`).join("L"
 // Crée le personnage dans `el` et renvoie un contrôleur piloté de l'extérieur (par le lecteur)
 // ou par sa propre horloge (fiche). Rien ne bouge tant que render() n'est pas appelé : la pause est naturelle.
 export function createCharacter(el, posture, { background = true, aspect = 1.5 } = {}) {
-  const [start, end] = posesFor(posture);
+  const [start, end, exhalePose] = posesFor(posture);
   // Variante « plus profonde » de la posture finale, atteinte progressivement pendant la tenue
   const deep = {};
   for (const k in end) deep[k] = [...end[k]];
@@ -112,6 +137,11 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
       <svg class="pose-figure" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Personnage illustrant ${posture.nom}">
         <circle data-k="aura" r="40" fill="#fbf8f3" opacity=".25"/>
         <rect data-k="mat" rx="2.5" height="5" fill="${C.tapis}" opacity=".35"/>
+        ${posture.chaise ? `<g class="chair" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M100 116L94 158M140 116L146 158M106 116L110 152" stroke="#a8927c" stroke-width="3.5" fill="none"/>
+          <path d="M96 111q-6-30-2-58q2-6 8-5q5 1 5 7q-3 28 2 56z" fill="#e7ddd0" stroke="#cbbba8" stroke-width="1.5"/>
+          <rect x="94" y="109" width="54" height="8" rx="4" fill="#e7ddd0" stroke="#cbbba8" stroke-width="1.5"/>
+        </g>` : ""}
         <g stroke-linecap="round" stroke-linejoin="round" fill="none">
           <path data-k="leg2" stroke="${C.leggingOmbre}" stroke-width="11"/>
           <path data-k="arm2" stroke="${C.peauOmbre}" stroke-width="7"/>
@@ -135,7 +165,7 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
     </div>`;
   const svg = el.querySelector(".pose-figure");
   // Cadrage automatique
-  const pts = [...Object.values(start), ...Object.values(end)];
+  const pts = [...Object.values(start), ...Object.values(end), ...(exhalePose ? Object.values(exhalePose) : []), ...(posture.chaise ? [[92, 48], [148, 158]] : [])];
   const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
   const x0 = Math.min(...xs) - 26, x1 = Math.max(...xs) + 26, y0 = Math.min(...ys) - 28, y1 = 168;
   let w = Math.max(x1 - x0, 130), h = Math.max(y1 - y0, 90);
@@ -206,7 +236,9 @@ export function createCharacter(el, posture, { background = true, aspect = 1.5 }
     } else if (phase === "tenue") {
       const b = breath ?? softBreath(t);
       const melt = length ? ease(Math.min(1, t / length)) : 0; // on « fond » peu à peu dans la posture
-      draw(breatheOn(mix(end, deep, melt), b, 1.3), { breath: b, blink, aura: 0.18 + b * 0.22 });
+      // Mouvement rythmé (chaise) : la posture « expiration » et la posture « inspiration » alternent avec le souffle
+      const held = exhalePose ? mix(exhalePose, end, b) : mix(end, deep, melt);
+      draw(breatheOn(held, b, exhalePose ? 0.4 : 1.3), { breath: b, blink, aura: 0.18 + b * 0.22 });
       setLabel((inhale ?? b > 0.5) ? "J'inspire…" : "J'expire…");
     } else if (phase === "sortie") {
       const T1 = 4200;

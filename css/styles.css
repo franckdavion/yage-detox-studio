@@ -285,3 +285,4 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .player.paused .dial::after { content: "En pause"; position: absolute; left: 50%; bottom: 13%; transform: translateX(-50%); z-index: 3; background: var(--glass-strong); color: var(--ink); padding: 5px 14px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 .player.paused .breath-orb, .player.paused .dial-visual { transition: none; }
 .player .dial { position: relative; }
+.hero-switch[hidden] { display: none; }

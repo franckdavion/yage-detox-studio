@@ -2,7 +2,7 @@
 import { CONTRAINTES, MOMENTS, THEMES, PRINCIPES } from "./data/yin-yoga.js";
 import {
   state, save, books, allPostures, getPosture, allProgrammes,
-  toggleContrainte, warningsFor, matchedAdaptations, inSeance, toggleSeance,
+  toggleContrainte, warningsFor, matchedAdaptations, inSeance, toggleSeance, BUILTIN_BOOKS,
 } from "./store.js";
 import { esc, icon, toast, minutes, postureFigure, installImageFallbacks } from "./ui.js";
 import { openPlayer } from "./player.js";
@@ -198,7 +198,8 @@ function renderPosture(id) {
     <section class="detail-hero glass">
       <div class="hero-art-wrap" style="position:relative">
         ${postureFigure(p, { cls: "hero-art" })}
-        <div class="hero-switch" role="group" aria-label="Affichage">
+        ${p.image ? "" : `<span class="visually-hidden">Animation</span>`}
+        <div class="hero-switch" role="group" aria-label="Affichage" ${p.image ? "" : "hidden"}>
           <button data-hero="photo" aria-pressed="true">Photo</button>
           <button data-hero="anim" aria-pressed="false">Animation</button>
         </div>
@@ -259,6 +260,8 @@ function renderPosture(id) {
 
   stopViewAnims.forEach((f) => f());
   stopViewAnims = [mountPoseAnimation(view.querySelector("#entry-anim"), p, { mode: "boucle" })];
+  // Sans photo (ex. yoga sur chaise) : le personnage animé occupe directement l'image principale
+  if (!p.image) stopViewAnims.push(mountPoseAnimation(view.querySelector(".hero-art"), p, { mode: "boucle" }));
   view.querySelector("#practice").onclick = () => openPlayer([{ posture: p, duree: p.duree }], { titre: "Pratique libre" });
   view.querySelector("#listen")?.addEventListener("click", () => {
     stopSpeaking();
@@ -313,8 +316,10 @@ function renderSeances() {
       <div class="detail-grid" style="grid-template-columns:1fr 1fr;margin-top:0">
         <div class="form-row"><label for="g-theme">Thème</label>
           <select id="g-theme"><option value="">Équilibrée</option>${Object.entries(THEMES).map(([k, t]) => `<option value="${k}">${t.emoji} ${t.label}</option>`).join("")}</select></div>
+        <div class="form-row"><label for="g-style">Style</label>
+          <select id="g-style">${books().map((b) => `<option value="${esc(b.style)}">${esc(b.titre)}</option>`).join("")}</select></div>
         <div class="form-row"><label for="g-min">Durée</label>
-          <select id="g-min">${[20, 30, 45, 60, 75].map((m) => `<option ${m === 45 ? "selected" : ""}>${m}</option>`).join("")}</select></div>
+          <select id="g-min">${[5, 10, 20, 30, 45, 60, 75].map((m) => `<option ${m === 45 ? "selected" : ""}>${m}</option>`).join("")}</select></div>
       </div>
       <div class="row" style="margin-top:14px"><button class="btn terra" id="gen">Générer dans « Ma séance »</button></div>
     </section>
@@ -354,7 +359,7 @@ function renderSeances() {
     if (d) { state.maSeance[+d.dataset.dur].duree = +d.value; save(); renderSeances(); }
   };
   view.querySelector("#gen").onclick = () => {
-    const seq = generate({ theme: view.querySelector("#g-theme").value, minutes: +view.querySelector("#g-min").value });
+    const seq = generate({ theme: view.querySelector("#g-theme").value, minutes: +view.querySelector("#g-min").value, style: view.querySelector("#g-style").value });
     state.maSeance = seq.map((e) => ({ id: e.posture.id, duree: e.duree }));
     save();
     renderSeances();
@@ -385,7 +390,7 @@ function renderImport() {
       <h2>Bibliothèque</h2>
       <ul class="seq-list" style="margin-top:10px">
         ${books().map((b, i) => `<li class="seq-item"><div><strong>${esc(b.titre)}</strong><br/><span class="muted" style="font-size:.85rem">${esc(b.style)} · ${b.postures.length} postures · lecteur ${b.mode === "flux" ? "flux / respirations" : "minuteur statique"}</span></div>
-          <div class="tools">${i === 0 ? '<span class="tag">Livre de base</span>' : `<button data-rm="${b.id}" aria-label="Supprimer">${icon("trash")}</button>`}</div></li>`).join("")}
+          <div class="tools">${i < BUILTIN_BOOKS.length ? '<span class="tag">Intégré</span>' : `<button data-rm="${b.id}" aria-label="Supprimer">${icon("trash")}</button>`}</div></li>`).join("")}
       </ul>
       <details style="margin-top:14px"><summary class="muted">Importer un fichier JSON (sans IA)</summary>
         <input type="file" id="json" accept="application/json" style="margin-top:10px" /></details>
