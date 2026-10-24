@@ -6,13 +6,13 @@ import {
   savedSeances, getSeance, saveSeance, deleteSeance, duplicateSeance, editSeance, seanceEntries,
 } from "./store.js";
 import { esc, icon, toast, minutes, postureFigure, installImageFallbacks } from "./ui.js";
-import { openPlayer } from "./player.js";
+import { openPlayer, closePlayer } from "./player.js";
 import { mountPoseAnimation } from "./animation.js";
 import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "8 · mes séances";
+export const APP_VERSION = "9 · yoga des yeux";
 const view = document.getElementById("view");
 installImageFallbacks();
 const filters = { moment: "", theme: "", q: "", adapte: false, livre: "" };
@@ -30,6 +30,7 @@ const routes = [
 ];
 let stopViewAnims = [];
 function router() {
+  closePlayer(); // changer de page ferme le lecteur (bouton retour du téléphone, liens…)
   stopSpeaking();
   stopViewAnims.forEach((f) => f());
   stopViewAnims = [];
@@ -60,7 +61,7 @@ function postureCard(p) {
         <h3>${esc(p.nom)}</h3>
         <span class="muted" style="font-size:.86rem">${esc(p.famille || "")}</span>
         <div class="card-meta">
-          <span class="tag">${p.mode === "flux" ? `${p.respirations || 5} resp.` : minutes(p.duree)}${p.cotes ? " × 2" : ""}</span>
+          <span class="tag">${p.mode === "flux" ? (p.cycle ? `${p.repetitions || 5} fois` : `${p.respirations || 5} resp.`) : p.duree < 120 ? `${p.duree} s` : minutes(p.duree)}${p.cotes ? " × 2" : ""}</span>
           <span class="tag">${NIVEAUX[p.niveau] || ""}</span>
           ${warn.length ? `<span class="tag warn">À éviter : ${esc(warn.map(label).join(", "))}</span>` : ""}
           ${!warn.length && matchedAdaptations(p).length ? `<span class="tag ok">Adaptation proposée</span>` : ""}
@@ -94,10 +95,10 @@ function renderCatalogue() {
       <div class="section-head"><h2>Mes méthodes</h2></div>
       <div class="methods">
         ${bookList.map((b) => `<button class="method glass ${filters.livre === b.id ? "on" : ""}" data-method="${esc(b.id)}">
-          <span class="method-icon">${b.style === "chaise" ? "🪑" : b.style === "yin" ? "🌙" : "📖"}</span>
+          <span class="method-icon">${b.style === "chaise" ? "🪑" : b.style === "yin" ? "🌙" : b.style === "yeux" ? "👁️" : "📖"}</span>
           <span class="method-txt"><strong>${esc(b.titre)}</strong>
-            <span class="muted">${b.postures.length} fiches · ${b.mode === "flux" ? "au rythme du souffle" : "tenues longues"}</span></span>
-          ${b.id === "yoga-chaise" ? '<span class="tag ok">Nouveau</span>' : ""}
+            <span class="muted">${b.postures.length} fiches · ${b.style === "yeux" ? "contre la fatigue des écrans" : b.mode === "flux" ? "au rythme du souffle" : "tenues longues"}</span></span>
+          ${b.id === "yoga-yeux" ? '<span class="tag ok">Nouveau</span>' : ""}
         </button>`).join("")}
       </div>
       ${savedSeances().length ? `<div class="section-head" style="margin-top:20px"><h2>Mes séances</h2><a class="muted" href="#/mes-seances">Tout voir</a></div>
@@ -105,6 +106,7 @@ function renderCatalogue() {
       ${bookList.some((b) => b.id === "yoga-chaise") ? `<div class="row" style="margin-top:12px">
         <button class="btn terra small" data-play-prog="chaise-complete">${icon("play")} Pause yoga sur chaise</button>
         <button class="btn ghost small" data-play-prog="chaise-express">Nuque & épaules · 5 min</button>
+        <button class="btn ghost small" data-play-prog="yeux-reposes">👁️ Yeux reposés · 5 min</button>
       </div>` : ""}
     </section>
 
@@ -242,7 +244,7 @@ function renderPosture(id) {
       <h1>${esc(p.nom)}</h1>
       <div class="sanskrit">${esc(p.sanskrit)}</div>
       <div class="facts">
-        <div class="fact"><b>Tenue</b>${p.mode === "flux" ? `${p.respirations || 5} respirations` : minutes(p.duree)}${p.cotes ? " par côté" : ""}</div>
+        <div class="fact"><b>Tenue</b>${p.mode === "flux" ? (p.cycle ? `${p.repetitions || 5} répétitions` : `${p.respirations || 5} respirations`) : p.duree < 120 ? `${p.duree} secondes` : minutes(p.duree)}${p.cotes ? " par côté" : ""}</div>
         <div class="fact"><b>Moment</b>${(p.moments || []).map((m) => MOMENTS[m]?.label).join(", ")}</div>
         <div class="fact"><b>Niveau</b>${NIVEAUX[p.niveau] || "—"}</div>
         <div class="fact"><b>Racines</b>${esc(p.racines || "—")}</div>
@@ -450,7 +452,7 @@ function renderMesSeances() {
           <div class="saved-strip">${entries.slice(0, 4).map((e) => postureFigure(e.posture, { cls: "mini-art" })).join("")}${entries.length > 4 ? `<span class="saved-more">+${entries.length - 4}</span>` : ""}</div>
           <div class="saved-body">
             <h3>${esc(s.nom)}</h3>
-            <p class="muted" style="font-size:.86rem">${entries.length} posture${entries.length > 1 ? "s" : ""} · ${minutes(total)} · ${styles.map((st) => (st === "chaise" ? "🪑 Chaise" : st === "yin" ? "🌙 Yin" : esc(st))).join(" + ")}</p>
+            <p class="muted" style="font-size:.86rem">${entries.length} posture${entries.length > 1 ? "s" : ""} · ${minutes(total)} · ${styles.map((st) => (st === "chaise" ? "🪑 Chaise" : st === "yin" ? "🌙 Yin" : st === "yeux" ? "👁️ Yeux" : esc(st))).join(" + ")}</p>
             <div class="dots">${entries.map((e) => `<span>${esc(e.posture.nom)}</span>`).join("")}</div>
             ${flagged ? `<p style="font-size:.8rem;color:var(--warn)">${flagged} posture(s) à adapter à ton profil</p>` : ""}
             <p class="muted" style="font-size:.75rem">Modifiée le ${dateFr(s.modifieLe)}</p>

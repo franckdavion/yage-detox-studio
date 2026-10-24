@@ -1,6 +1,6 @@
 // Service worker : permet d'ouvrir l'app et de pratiquer hors connexion.
 // Pense à changer VERSION à chaque mise à jour des fichiers pour rafraîchir le cache.
-const VERSION = "yds-v8";
+const VERSION = "yds-v9";
 const FILES = [
   "./",
   "index.html",
@@ -16,6 +16,8 @@ const FILES = [
   "js/import.js",
   "js/data/yin-yoga.js",
   "js/data/chaise.js",
+  "js/data/yeux.js",
+  "js/eyes.js",
   "assets/icon.svg",
   "assets/icon-180.png",
   "assets/icon-192.png",

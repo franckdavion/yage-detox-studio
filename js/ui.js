@@ -62,10 +62,12 @@ const FIGURES = {
   inversion: '<circle cx="88" cy="146" r="10"/><path d="M100 150h72V68M116 150l-18-22M150 150l18-22"/>',
   allongee: '<circle cx="84" cy="146" r="10"/><path d="M96 150h132M118 150l-6 10M150 150l6 10"/>',
   debout: '<circle cx="160" cy="142" r="10"/><path d="M172 152v-52q-14 4-14 32M148 118h24"/>',
+  yeux: '<path d="M96 110q64-62 128 0q-64 62-128 0z"/><circle cx="160" cy="110" r="20"/><circle cx="160" cy="110" r="6" fill="#fbf8f3"/>',
   chaise: '<path d="M128 112l-4 42M168 112l4 42M124 110h48M126 110q-6-28-2-52" opacity=".6"/><circle cx="150" cy="58" r="10"/><path d="M150 71v38M150 109h28l2 42M150 82l18 22"/>',
 };
 function categorie(p) {
   if (p.chaise) return "chaise";
+  if (p.yeux) return "yeux";
   const f = `${p.famille || ""} ${p.nom || ""}`.toLowerCase();
   if (/inversion|mur/.test(f)) return "inversion";
   if (/torsion/.test(f)) return "torsion";

@@ -2,6 +2,7 @@
 // à la posture finale, puis « respire » dans la tenue. Boucle douce, vue de profil.
 // Aucune dépendance : SVG + requestAnimationFrame.
 import { zenIllustration } from "./ui.js";
+import { createEyeGuide } from "./eyes.js";
 
 // Articulations : H tête, N épaules, P bassin, K/F genou/pied (jambe 1 et 2), E/W coude/main (bras 1 et 2)
 // Repère 320 × 200, sol à y = 158.
@@ -125,6 +126,8 @@ const seg = (...pts) => "M" + pts.map((q) => `${f1(q[0])} ${f1(q[1])}`).join("L"
 // Crée le personnage dans `el` et renvoie un contrôleur piloté de l'extérieur (par le lecteur)
 // ou par sa propre horloge (fiche). Rien ne bouge tant que render() n'est pas appelé : la pause est naturelle.
 export function createCharacter(el, posture, { background = true, aspect = 1.5 } = {}) {
+  // Yoga des yeux : visage de face dont le regard suit l'exercice
+  if (posture.yeux) return createEyeGuide(el, posture, { background });
   const [start, end, exhalePose] = posesFor(posture);
   // Variante « plus profonde » de la posture finale, atteinte progressivement pendant la tenue
   const deep = {};

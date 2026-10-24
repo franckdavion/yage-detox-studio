@@ -1,6 +1,7 @@
 // État persistant (localStorage) : profil, séance perso, livres importés, réglages.
 import { POSTURES, PROGRAMMES, LIVRE } from "./data/yin-yoga.js";
 import { LIVRE_CHAISE, POSTURES_CHAISE, PROGRAMMES_CHAISE } from "./data/chaise.js";
+import { LIVRE_YEUX, POSTURES_YEUX, PROGRAMMES_YEUX } from "./data/yeux.js";
 
 const KEY = "yds.state.v1";
 const defaults = {
@@ -37,8 +38,9 @@ export function save() {
 // --- Bibliothèque unifiée (livre de base + livres importés) ---
 const baseBook = { ...LIVRE, mode: "statique", postures: POSTURES };
 const chaiseBook = { ...LIVRE_CHAISE, postures: POSTURES_CHAISE };
+const yeuxBook = { ...LIVRE_YEUX, postures: POSTURES_YEUX };
 // Livres intégrés à l'application (non supprimables) + livres importés
-export const BUILTIN_BOOKS = [baseBook, chaiseBook];
+export const BUILTIN_BOOKS = [baseBook, chaiseBook, yeuxBook];
 
 export function books() {
   return [...BUILTIN_BOOKS, ...state.livres];
@@ -56,7 +58,7 @@ export function getPosture(id) {
 
 export function allProgrammes() {
   const imported = state.livres.flatMap((b) => b.programmes || []);
-  return [...PROGRAMMES, ...PROGRAMMES_CHAISE, ...imported];
+  return [...PROGRAMMES, ...PROGRAMMES_CHAISE, ...PROGRAMMES_YEUX, ...imported];
 }
 
 // --- Profil d'adaptabilité ---

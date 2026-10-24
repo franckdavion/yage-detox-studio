@@ -329,3 +329,4 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .empty-orb { width: 90px; height: 90px; margin: 0 auto 16px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, color-mix(in srgb, var(--terra) 50%, var(--paper)), color-mix(in srgb, var(--sage) 70%, transparent)); animation: breathe 8s ease-in-out infinite; }
 .saved-chip { display: inline-flex; align-items: center; gap: 6px; }
 .saved-chip svg { width: 12px; height: 12px; }
+.dial-visual .eye-guide .pose-figure { inset: 4% 4% 0; width: 92%; height: 96%; }

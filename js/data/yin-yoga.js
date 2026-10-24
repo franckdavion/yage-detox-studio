@@ -43,6 +43,7 @@ export const THEMES = {
   calme: { label: "Calme & sommeil", emoji: "🌙" },
   energie: { label: "Énergie", emoji: "☀️" },
   bureau: { label: "Pause bureau", emoji: "🪑" },
+  ecrans: { label: "Yeux & écrans", emoji: "👁️" },
 };
 
 // Principes généraux du livre (respiration, visualisation, méthode)

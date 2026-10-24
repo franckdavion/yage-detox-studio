@@ -184,6 +184,8 @@ class Session {
   holdMs() {
     const { posture, duree } = this.step;
     if (posture.mode === "flux") {
+      // Répétitions à cadence fixe (yoga des yeux) ou respirations (chaise, styles dynamiques)
+      if (posture.cycle) return (posture.repetitions || 5) * posture.cycle * 1000;
       const n = posture.respirations || 5;
       return n * (this.breathIn + this.breathOut);
     }
@@ -226,7 +228,7 @@ class Session {
       this.setTimeDisplay("Prépare-toi");
     }
     if (phase === "tenue") {
-      r.phase.textContent = posture.mode === "flux" ? "Flux · respirations" : "Tenue";
+      r.phase.textContent = posture.mode === "flux" ? (posture.cycle ? "Exercice · répétitions" : "Flux · respirations") : "Tenue";
       chime(660);
       this.phaseLength = this.holdMs();
       this.waitingVoice = false;
@@ -334,9 +336,11 @@ class Session {
       const amp = this.character ? 0.012 : 0.035;
       r.visual.style.transform = `scale(${inhale ? 1 + amp : 1 - amp})`;
       if (posture.mode === "flux") {
-        const n = Math.min(posture.respirations || 5, Math.floor(this.elapsed / cycle) + 1);
+        const per = posture.cycle ? posture.cycle * 1000 : cycle;
+        const tot = posture.cycle ? posture.repetitions || 5 : posture.respirations || 5;
+        const n = Math.min(tot, Math.floor(this.elapsed / per) + 1);
         r.time.classList.remove("word");
-        r.time.textContent = `${n}/${posture.respirations || 5}`;
+        r.time.textContent = `${n}/${tot}`;
       } else {
         r.time.classList.remove("word");
         r.time.textContent = fmt(Math.ceil(left / 1000));

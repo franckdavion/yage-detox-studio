@@ -16,6 +16,10 @@ Application web de yoga interactive : bibliothèque de postures, séances détox
 
 Séquence de 11 fiches (mise en condition + 10 postures) inspirée du *Petit guide de yoga sur chaise* (Utopies / YesWeGreen, 2021). Les consignes sont reformulées ; ni le texte ni les illustrations du guide ne sont reproduits. Le lecteur passe en mode « flux » (compteur de respirations) et le personnage s'assoit sur une chaise ; pour les mouvements rythmés (bras, dos creux / dos rond), il alterne entre deux positions au rythme exact du souffle. Programmes : « Pause yoga sur chaise » et « Nuque & épaules express ».
 
+## Yoga des yeux (troisième méthode)
+
+19 fiches contre la fatigue oculaire (palming, gym des yeux, mise au point, papillon, massage de l'orbite…) d'après la fiche *Exercices contre la fatigue des yeux* (Académie d'Aix-Marseille) ; consignes reformulées, images non reproduites. Un **visage guide** de face (`js/eyes.js`) anime le regard, les paupières et les mains selon chaque exercice, piloté image par image par le lecteur (pause comprise). Le lecteur compte des répétitions à cadence fixe. Programmes : « Yeux reposés · 5 min », « Pause écran · 2 min », « Gym des yeux complète ».
+
 ## Phase 2 — Ingestion universelle (amorcée)
 
 L'onglet **Importer** envoie un PDF ou des photos à l'API Claude (vision). L'IA détecte le style et extrait les postures au même format que la base Yin. Le lecteur s'adapte :
