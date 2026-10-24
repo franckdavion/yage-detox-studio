@@ -3,6 +3,7 @@
 import { state, matchedAdaptations } from "./store.js";
 import { speak, stopSpeaking, pauseSpeaking, resumeSpeaking } from "./tts.js";
 import { esc, fmt, icon, postureFigure } from "./ui.js";
+import { mountPoseAnimation } from "./animation.js";
 
 const ROOT = () => document.getElementById("player-root");
 const RING = 2 * Math.PI * 46;
@@ -64,7 +65,6 @@ class Session {
       </div>
       <div class="player-progress">${this.steps.map(() => "<span></span>").join("")}</div>
       <div class="player-main">
-        <div class="player-fig" data-ref="fig"></div>
         <div class="player-title">
           <div class="phase" data-ref="phase"></div>
           <h2 data-ref="name"></h2>
@@ -78,11 +78,12 @@ class Session {
           </svg>
           <div class="center">
             <div class="breath-orb" data-ref="orb"></div>
-            <div class="dial-text">
-              <div class="dial-time" data-ref="time">—</div>
-              <div class="dial-breath" data-ref="breath"></div>
-            </div>
+            <div class="dial-visual" data-ref="visual"></div>
           </div>
+        </div>
+        <div class="dial-readout">
+          <div class="dial-time" data-ref="time">—</div>
+          <div class="dial-breath" data-ref="breath"></div>
         </div>
         <p class="cue-text" data-ref="cue" aria-live="polite"></p>
         <div class="controls">
@@ -121,7 +122,30 @@ class Session {
     this.raf = requestAnimationFrame(this.loop);
   }
 
+  // Visuel au cœur du minuteur : animation d'entrée pendant l'installation,
+  // photo (ou, à défaut, silhouette qui respire) pendant la tenue et la sortie.
+  setVisual(phase) {
+    const { posture, cote } = this.step;
+    const v = this.refs.visual;
+    v.classList.toggle("mirror", cote === "gauche");
+    const wantsAnim = phase === "installation" || !posture.image;
+    const key = `${posture.id}:${wantsAnim ? phase === "installation" ? "entree" : "tenue" : "photo"}`;
+    if (v.dataset.key === key) return;
+    v.dataset.key = key;
+    this.stopAnim?.();
+    this.stopAnim = null;
+    const holdAnim = () => (this.stopAnim = mountPoseAnimation(v, posture, { mode: "tenue", breath: () => this.breathPhase ?? 0.5 }));
+    if (phase === "installation") this.stopAnim = mountPoseAnimation(v, posture, { mode: "boucle" });
+    else if (!posture.image) holdAnim();
+    else {
+      v.innerHTML = postureFigure(posture, { cls: "dial-art" });
+      // Photo introuvable : on bascule sur la silhouette animée
+      v.querySelector("img")?.addEventListener("error", () => { if (v.dataset.key === key) holdAnim(); }, { once: true });
+    }
+  }
+
   destroy() {
+    this.stopAnim?.();
     cancelAnimationFrame(this.raf);
     stopSpeaking();
     document.removeEventListener("keydown", this.onKey);
@@ -154,11 +178,7 @@ class Session {
     const r = this.refs;
     this.renderProgress();
     r.name.textContent = posture.nom;
-    if (r.fig.dataset.id !== posture.id) {
-      r.fig.dataset.id = posture.id;
-      r.fig.innerHTML = postureFigure(posture, { cls: "player-art" });
-    }
-    r.fig.classList.toggle("mirror", cote === "gauche");
+    if (phase !== "fin") this.setVisual(phase);
     r.sub.textContent = posture.sanskrit + (cote ? ` · côté ${cote}` : "");
     const next = this.steps[this.index + 1];
     r.nextup.textContent = next ? `Ensuite : ${next.posture.nom}${next.cote ? " (côté " + next.cote + ")" : ""}` : "Dernière posture";
@@ -206,7 +226,10 @@ class Session {
     }
     if (phase === "fin") {
       r.phase.textContent = "Fin de séance";
-      r.fig.innerHTML = "";
+      this.stopAnim?.();
+      this.stopAnim = null;
+      r.visual.dataset.key = "";
+      r.visual.innerHTML = '<div class="dial-namaste">🙏</div>';
       r.name.textContent = "Namasté";
       r.sub.textContent = "Merci pour cette pratique";
       r.cue.textContent = "Garde quelques instants ce calme avec toi avant de reprendre tes activités.";
@@ -274,6 +297,9 @@ class Session {
       r.breath.textContent = inhale ? "Inspire" : "Expire";
       r.orb.style.transitionDuration = (inhale ? this.breathIn : this.breathOut) + "ms";
       r.orb.style.transform = `scale(${inhale ? 1 : 0.72})`;
+      this.breathPhase = inhale ? t / this.breathIn : 1 - (t - this.breathIn) / this.breathOut;
+      r.visual.style.transitionDuration = r.orb.style.transitionDuration;
+      r.visual.style.transform = `scale(${inhale ? 1.035 : 0.965})`;
       if (posture.mode === "flux") {
         const n = Math.min(posture.respirations || 5, Math.floor(this.elapsed / cycle) + 1);
         r.time.classList.remove("word");
@@ -302,6 +328,8 @@ class Session {
       r.ring.style.strokeDashoffset = RING;
       r.orb.style.transitionDuration = "3000ms";
       r.orb.style.transform = "scale(0.85)";
+      r.visual.style.transitionDuration = "1500ms";
+      r.visual.style.transform = "scale(1)";
       r.breath.textContent = "";
       if (this.phase === "installation" && !state.voix.active && this.cueQueue?.length) {
         const per = this.phaseLength / (this.cueQueue.length + 1);

@@ -106,4 +106,12 @@ export function installImageFallbacks(root = document) {
     const img = e.target;
     if (img.classList?.contains("pfig-photo")) img.remove();
   }, true);
+  // Filet de sécurité : images déjà chargées (cache) ou cassées avant l'écoute
+  const settle = (img) => {
+    if (!img.complete) return;
+    if (img.naturalWidth > 0) { img.classList.add("loaded"); img.parentElement?.classList.add("has-photo"); }
+    else img.remove();
+  };
+  new MutationObserver(() => document.querySelectorAll("img.pfig-photo:not(.loaded)").forEach(settle))
+    .observe(document.body, { childList: true, subtree: true });
 }

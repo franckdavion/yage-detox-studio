@@ -196,7 +196,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .player-title h2 { font-size: clamp(1.8rem, 6vw, 2.6rem); }
 .phase { font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; color: var(--terra-deep); }
 .dial { position: relative; width: min(78vw, 340px); aspect-ratio: 1; }
-.dial svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.dial > svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .dial .track { stroke: var(--line); }
 .dial .prog-ring { stroke: var(--sage-deep); transition: stroke-dashoffset 0.4s linear; }
 .dial .center { position: absolute; inset: 0; display: grid; place-items: center; }
@@ -246,3 +246,38 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .player-main { gap: 12px; }
 .player .dial { width: min(66vw, 300px, 36vh); }
 .dial-time.word { font-size: clamp(1.4rem, 6vw, 1.9rem); }
+
+/* Animations de posture */
+.pose-anim { position: relative; width: 100%; height: 100%; overflow: hidden; }
+.pose-anim .zen-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+.zen-art.no-figure .zen-figure { display: none; }
+.pose-figure { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pose-figure .near { stroke: #fbf8f3; stroke-width: 6; }
+.pose-figure .far { stroke: #fbf8f3; stroke-width: 5; opacity: 0.55; }
+.pose-figure circle { fill: #fbf8f3; }
+.pose-shadow { fill: rgba(47, 42, 37, 0.12); }
+.pose-label { position: absolute; left: 12px; top: 10px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #fbf8f3; text-shadow: 0 1px 6px rgba(0,0,0,.18); }
+.pose-label:empty { display: none; }
+
+/* Lecteur : visuel au cœur du minuteur */
+.player .dial { width: min(82vw, 360px, 44vh); }
+.breath-orb { inset: 3%; }
+.dial-visual { position: absolute; inset: 9%; border-radius: 50%; overflow: hidden; transition: transform 4s ease-in-out; box-shadow: 0 18px 50px -22px rgba(60, 40, 30, 0.45), inset 0 0 0 1px rgba(255,255,255,.35); background: var(--sand); }
+.dial-visual > .pfig, .dial-visual > .pose-anim { position: absolute; inset: 0; width: 100%; height: 100%; }
+.dial-art .zen-art { transform: scale(1.15); }
+.dial-art .pfig-photo { left: 10%; right: 10%; top: 16%; bottom: 16%; width: 80%; height: 68%; object-position: center; }
+.dial-visual .pose-figure { inset: 14%; width: 72%; height: 72%; }
+.dial-visual .pose-label { left: 0; right: 0; top: 12%; text-align: center; font-size: 0.62rem; }
+.dial-visual.mirror .pfig-photo, .dial-visual.mirror .pose-figure { transform: scaleX(-1); }
+.dial-namaste { position: absolute; inset: 0; display: grid; place-items: center; font-size: 3.4rem; background: radial-gradient(circle, color-mix(in srgb, var(--sage) 35%, var(--paper)), var(--sand)); }
+.dial-readout { display: flex; flex-direction: column; align-items: center; margin-top: -4px; }
+.dial-readout .dial-time { font-size: clamp(2.2rem, 9vw, 3rem); }
+.dial-readout .dial-time.word { font-size: clamp(1.3rem, 5vw, 1.6rem); }
+
+/* Fiche : animation d'entrée */
+.entry-anim { height: clamp(170px, 42vw, 230px); border-radius: 18px; overflow: hidden; margin-bottom: 16px; position: relative; }
+.hero-switch { position: absolute; right: 12px; top: 12px; z-index: 3; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--glass-strong); }
+.hero-switch button { border: 0; background: transparent; border-radius: 999px; padding: 5px 10px; font-size: 0.75rem; font-weight: 600; }
+.hero-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.card-art { height: 170px; }
+.dial > svg { position: relative; z-index: 2; pointer-events: none; }

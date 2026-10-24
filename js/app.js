@@ -6,6 +6,7 @@ import {
 } from "./store.js";
 import { esc, icon, toast, minutes, postureFigure, installImageFallbacks } from "./ui.js";
 import { openPlayer } from "./player.js";
+import { mountPoseAnimation } from "./animation.js";
 import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
@@ -24,8 +25,11 @@ const routes = [
   [/^#\/importer$/, renderImport, "importer"],
   [/^#\/profil$/, renderProfil, "profil"],
 ];
+let stopViewAnims = [];
 function router() {
   stopSpeaking();
+  stopViewAnims.forEach((f) => f());
+  stopViewAnims = [];
   const h = location.hash || "#/";
   for (const [re, fn, tab] of routes) {
     const m = h.match(re);
@@ -192,7 +196,13 @@ function renderPosture(id) {
   view.innerHTML = `
     <a class="back" href="#/">${icon("back")} Bibliothèque</a>
     <section class="detail-hero glass">
-      ${postureFigure(p, { cls: "hero-art" })}
+      <div class="hero-art-wrap" style="position:relative">
+        ${postureFigure(p, { cls: "hero-art" })}
+        <div class="hero-switch" role="group" aria-label="Affichage">
+          <button data-hero="photo" aria-pressed="true">Photo</button>
+          <button data-hero="anim" aria-pressed="false">Animation</button>
+        </div>
+      </div>
       <span class="eyebrow">${esc(p.famille || "")}</span>
       <h1>${esc(p.nom)}</h1>
       <div class="sanskrit">${esc(p.sanskrit)}</div>
@@ -209,6 +219,7 @@ function renderPosture(id) {
       <section class="panel glass">
         <div class="section-head"><h2>Entrer dans la posture</h2>
           ${ttsSupported ? `<button class="btn ghost small" id="listen">${icon("listen")} Écouter</button>` : ""}</div>
+        <div class="entry-anim" id="entry-anim"></div>
         <ol class="steps">${(p.entree || []).map((s) => `<li><span>${esc(s)}</span></li>`).join("")}</ol>
       </section>
       <section class="panel glass">
@@ -246,6 +257,8 @@ function renderPosture(id) {
       <button class="btn ghost" data-add="${esc(p.id)}">${inSeance(p.id) ? "Retirer de ma séance" : "Ajouter à ma séance"}</button>
     </div>`;
 
+  stopViewAnims.forEach((f) => f());
+  stopViewAnims = [mountPoseAnimation(view.querySelector("#entry-anim"), p, { mode: "boucle" })];
   view.querySelector("#practice").onclick = () => openPlayer([{ posture: p, duree: p.duree }], { titre: "Pratique libre" });
   view.querySelector("#listen")?.addEventListener("click", () => {
     stopSpeaking();
@@ -254,6 +267,18 @@ function renderPosture(id) {
   view.onclick = (e) => {
     const c = e.target.closest("[data-contrainte]");
     if (c) { toggleContrainte(c.dataset.contrainte); renderPosture(id); return; }
+    const hs = e.target.closest("[data-hero]");
+    if (hs) {
+      const wrap = view.querySelector(".hero-art-wrap");
+      wrap.querySelectorAll("[data-hero]").forEach((b) => b.setAttribute("aria-pressed", b === hs));
+      const slot = wrap.querySelector(".hero-art");
+      if (hs.dataset.hero === "anim") {
+        stopViewAnims.push(mountPoseAnimation(slot, p, { mode: "boucle" }));
+      } else {
+        slot.outerHTML = postureFigure(p, { cls: "hero-art" });
+      }
+      return;
+    }
     const add = e.target.closest("[data-add]");
     if (add) { const added = toggleSeance(add.dataset.add); add.textContent = added ? "Retirer de ma séance" : "Ajouter à ma séance"; toast(added ? "Ajoutée à ta séance" : "Retirée"); }
   };
