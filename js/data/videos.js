@@ -9,8 +9,8 @@
 //                   le lecteur la cale sur le souffle de l'utilisateur pendant la tenue.
 // Tant qu'un exercice n'a pas de vidéo (ou si le fichier ne se charge pas), le personnage animé s'affiche.
 export const VIDEOS = {
-  // Démo : mannequin 3D, cycle de 10 s (inspire 4 s = se dérouler, expire 6 s = s'enrouler)
-  "pil-roll-up": { src: "assets/videos/pil-roll-up.mp4", souffle: true },
+  // Personnage 3D posé os par os : cycle de 10 s (inspire 4 s = se dérouler, expire 6 s = s'enrouler)
+  "pil-roll-up": { src: "assets/videos/pil-roll-up.mp4", souffle: true, zoom: 1, cadrage: "50% 62%" },
   // Personnage Mixamo (animation « Start Plank ») rendu en 3D : debout -> planche -> debout, 10 s
   "pil-pompes-prep": { src: "assets/videos/pil-pompes-prep.mp4", zoom: 1, cadrage: "50% 72%" },
   // Même personnage, animation d'étirement : bras droit puis bras gauche croisés devant la poitrine

@@ -19,7 +19,7 @@ import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "18 · vidéos 3D";
+export const APP_VERSION = "19 · roll-up 3D";
 // Contrôle au démarrage : chaque étirement respecte le modèle (console du navigateur)
 verifierEtirements(POSTURES_ETIREMENTS, POSES);
 const view = document.getElementById("view");

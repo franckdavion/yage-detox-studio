@@ -38,9 +38,12 @@ Exemple de conversion avec ffmpeg :
 ffmpeg -i source.mov -an -vf "scale=720:-2,fps=30" -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 24 -movflags +faststart pil-roll-up.mp4
 ```
 
-## Vidéo de démonstration
+## Vidéos actuelles
 
-`pil-roll-up.mp4` est une vidéo de test : un mannequin 3D en volumes simples, rendu par
-ordinateur, sur un tapis violet lavande. Elle sert à valider le fonctionnement (boucle,
-synchronisation au souffle, pause, vitesse, avatar). Elle sera remplacée par le rendu du
-personnage réaliste (voir le guide MakeHuman).
+| Fichier | Exercice | Origine |
+| --- | --- | --- |
+| `pil-roll-up.mp4` | Enroulé complet (Roll-Up) | Personnage Mixamo posé os par os (mouvement créé), calé sur le souffle |
+| `pil-pompes-prep.mp4` | Préparation aux pompes | Personnage Mixamo, animation « Start Plank » |
+| `etir-epaule-croisee.mp4` | Épaule, bras croisé | Personnage Mixamo, animation d'étirement (GLB) |
+
+Les fichiers sources (.fbx, .glb) ne sont pas publiés : seules les vidéos rendues le sont (conditions Mixamo).
