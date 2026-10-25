@@ -195,6 +195,7 @@ class Session {
     const vid = usePhoto ? null : videoFor(posture, state.avatar);
     const render3d = vid?.src;
     this.videoSouffle = !!vid?.souffle;
+    if (vid && !vid.miroir) v.classList.remove("mirror"); // la vidéo montre déjà les deux côtés
     const key = `${posture.id}:${usePhoto ? "photo" : render3d ? "video" : "perso"}:${state.avatar}`;
     if (v.dataset.key === key) return;
     v.dataset.key = key;
