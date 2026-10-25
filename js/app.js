@@ -11,6 +11,7 @@ import { mountPoseAnimation, createCharacter, POSES } from "./animation.js";
 import { verifierEtirements } from "./data/modele-etirement.js";
 import { ZONES as ZONES_ETIR, POSTURES_ETIREMENTS } from "./data/etirements.js";
 import { CATEGORIES_PILATES } from "./data/pilates.js";
+import { videoFor } from "./data/videos.js";
 // Zones (étirements) et catégories (Pilates) partagent le même filtre
 const ZONES = { ...ZONES_ETIR, ...CATEGORIES_PILATES };
 const ZONES_PAR_LIVRE = { etirements: ZONES_ETIR, pilates: CATEGORIES_PILATES };
@@ -18,7 +19,7 @@ import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "15 · cartes cliquables";
+export const APP_VERSION = "16 · boucles vidéo";
 // Contrôle au démarrage : chaque étirement respecte le modèle (console du navigateur)
 verifierEtirements(POSTURES_ETIREMENTS, POSES);
 const view = document.getElementById("view");
@@ -130,7 +131,7 @@ function postureCard(p) {
   return `
     <a class="card glass" href="#/posture/${encodeURIComponent(p.id)}">
       <button class="add-fab ${added ? "in" : ""}" data-add="${esc(p.id)}" aria-label="${added ? "Retirer de" : "Ajouter à"} ma séance">${icon(added ? "check" : "plus")}</button>
-      ${(p.etirement || p.pilates) && !p.image ? `<div class="pfig card-art" data-char="${esc(p.id)}"></div>` : postureFigure(p, { cls: "card-art" })}
+      ${cardVisual(p)}
       <div class="card-body">
         <span class="eyebrow">${esc(p.sanskrit)}</span>
         <h3>${esc(p.nom)}</h3>
@@ -143,6 +144,34 @@ function postureCard(p) {
         </div>
       </div>
     </a>`;
+}
+
+// Visuel d'une carte : boucle vidéo si l'exercice en a une, sinon personnage (étirements, Pilates) ou photo
+function cardVisual(p) {
+  const vid = videoFor(p, state.avatar);
+  if (vid) return `<div class="pfig card-art card-video" data-char-fallback="${esc(p.id)}"><video src="${esc(vid.src)}" loop muted playsinline preload="metadata" aria-hidden="true"></video><span class="video-badge">Vidéo</span></div>`;
+  return (p.etirement || p.pilates) && !p.image ? `<div class="pfig card-art" data-char="${esc(p.id)}"></div>` : postureFigure(p, { cls: "card-art" });
+}
+
+// Les vidéos des cartes ne tournent que lorsqu'elles sont visibles (batterie) ; en cas d'échec, le personnage revient
+function activateCardVideos(root) {
+  const vids = [...root.querySelectorAll(".card-video video")];
+  if (!vids.length) return;
+  const io = "IntersectionObserver" in window ? new IntersectionObserver((entries) => {
+    for (const e of entries) e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause();
+  }, { threshold: 0.25 }) : null;
+  for (const v of vids) {
+    v.addEventListener("error", () => {
+      const box = v.closest(".card-video");
+      const p = getPosture(box?.dataset.charFallback);
+      if (!box || !p) return;
+      box.classList.remove("card-video");
+      box.innerHTML = "";
+      createCharacter(box, p).render({ phase: "tenue", t: 0, breath: 0.5 });
+    }, { once: true });
+    io ? io.observe(v) : v.play().catch(() => {});
+  }
+  stopViewAnims.push(() => io?.disconnect());
 }
 
 function chip(group, value, text, pressed) {
@@ -240,6 +269,7 @@ function renderResults() {
     box.innerHTML = groups.map((m) => section(MOMENTS[m].label, MOMENTS[m].sous,
       list.filter((p) => p.moments?.[0] === m || (filters.moment && p.moments?.includes(m))))).join("");
   }
+  activateCardVideos(box);
   // Étirements et Pilates : illustration semi-3D du personnage dans la posture finale
   box.querySelectorAll("[data-char]").forEach((el) => {
     const p = getPosture(el.dataset.char);
@@ -359,8 +389,18 @@ function renderPosture(id) {
 
   stopViewAnims.forEach((f) => f());
   stopViewAnims = [mountPoseAnimation(view.querySelector("#entry-anim"), p, { mode: "boucle" })];
-  // Sans photo (ex. yoga sur chaise) : le personnage animé occupe directement l'image principale
-  if (!p.image) stopViewAnims.push(mountPoseAnimation(view.querySelector(".hero-art"), p, { mode: "boucle" }));
+  // Boucle vidéo de l'exercice en image principale, sinon le personnage animé (postures sans photo)
+  const heroVid = videoFor(p, state.avatar);
+  const heroSlot = view.querySelector(".hero-art");
+  if (heroVid) {
+    heroSlot.classList.add("hero-video");
+    heroSlot.innerHTML = `<video src="${esc(heroVid.src)}" autoplay loop muted playsinline preload="auto" aria-label="Démonstration vidéo : ${esc(p.nom)}"></video>`;
+    heroSlot.querySelector("video").addEventListener("error", () => {
+      heroSlot.classList.remove("hero-video");
+      stopViewAnims.push(mountPoseAnimation(heroSlot, p, { mode: "boucle" }));
+    }, { once: true });
+    view.querySelector(".hero-switch")?.setAttribute("hidden", "");
+  } else if (!p.image) stopViewAnims.push(mountPoseAnimation(heroSlot, p, { mode: "boucle" }));
   view.querySelector("#practice").onclick = () => openPlayer([{ posture: p, duree: p.duree }], { titre: "Pratique libre" });
   view.querySelector("#listen")?.addEventListener("click", () => {
     stopSpeaking();

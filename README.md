@@ -8,6 +8,10 @@ Application web de yoga interactive : bibliothèque de postures, séances détox
 
 Lecteur commun : personnage semi-3D pour toutes les disciplines, avatar femme / homme, vitesse de lecture (0,75× à 1,5×, voix comprise), barre de progression de l'exercice (déplaçable pendant la tenue), onde vocale, lecture / pause / précédent / suivant. Une posture peut aussi fournir un rendu 3D réaliste pré-rendu (`rendu3d: { femme: "…mp4", homme: "…mp4" }`) : le lecteur l'affiche à la place du personnage, synchronisé avec la pause et la vitesse.
 
+## Boucles vidéo (MP4)
+
+Un exercice peut avoir sa boucle vidéo (`<video autoplay loop muted playsinline>`), déclarée dans `js/data/videos.js` et rangée dans `assets/videos/` : elle remplace le personnage animé dans le lecteur, la fiche et la carte de la bibliothèque, suit la pause et la vitesse de lecture, et peut se caler sur le souffle (`souffle: true`). Sans vidéo, ou si le fichier ne se charge pas, le personnage animé s'affiche. Format et procédure : `assets/videos/README.md`.
+
 ## Phase 1 — Moteur Yin
 
 - **Bibliothèque** de 25 postures Yin, classées par moment (Début · Ancrage, Milieu · Profondeur, Fin · Intériorisation) et par bienfait (Détox digestion, Lâcher-prise, Souplesse, Calme & sommeil, Énergie). Recherche par nom, bienfait ou méridien.

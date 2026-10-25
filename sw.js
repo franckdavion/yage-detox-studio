@@ -1,6 +1,6 @@
 // Service worker : permet d'ouvrir l'app et de pratiquer hors connexion.
 // Pense à changer VERSION à chaque mise à jour des fichiers pour rafraîchir le cache.
-const VERSION = "yds-v15";
+const VERSION = "yds-v16";
 const FILES = [
   "./",
   "index.html",
@@ -20,6 +20,7 @@ const FILES = [
   "js/data/etirements.js",
   "js/data/modele-etirement.js",
   "js/data/pilates.js",
+  "js/data/videos.js",
   "js/eyes.js",
   "assets/icon.svg",
   "assets/icon-180.png",
@@ -92,6 +93,8 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(req.url);
   // Ne jamais mettre en cache les appels à l'API IA
   if (url.hostname === "api.anthropic.com") return;
+  // Vidéos : lecture directe par le navigateur (requêtes partielles « Range », indispensables sur iPhone)
+  if (/\.(mp4|webm|mov)$/i.test(url.pathname) || req.headers.has("range")) return;
   // Réseau d'abord (pour recevoir les mises à jour), cache en secours hors ligne
   // Même origine : on revalide toujours auprès du serveur (pas de copie périmée du cache HTTP)
   const fresh = url.origin === location.origin ? new Request(req, { cache: "no-cache" }) : req;

@@ -4,6 +4,7 @@ import { state, save, matchedAdaptations } from "./store.js";
 import { speak, stopSpeaking, pauseSpeaking, resumeSpeaking, isSpeaking } from "./tts.js";
 import { esc, fmt, icon, postureFigure } from "./ui.js";
 import { createCharacter } from "./animation.js";
+import { videoFor } from "./data/videos.js";
 
 const ROOT = () => document.getElementById("player-root");
 // Vitesse de lecture : accélère ou ralentit le tempo (minuteur, souffle, personnage, voix)
@@ -190,8 +191,10 @@ class Session {
     const v = this.refs.visual;
     v.classList.toggle("mirror", cote === "gauche");
     const usePhoto = state.lecteurVisuel === "photo" && posture.image;
-    // Rendu 3D réaliste (vidéo pré-rendue par avatar), quand la posture en fournit un
-    const render3d = !usePhoto && posture.rendu3d?.[state.avatar];
+    // Boucle vidéo MP4 (rendu 3D pré-calculé), quand l'exercice en a une
+    const vid = usePhoto ? null : videoFor(posture, state.avatar);
+    const render3d = vid?.src;
+    this.videoSouffle = !!vid?.souffle;
     const key = `${posture.id}:${usePhoto ? "photo" : render3d ? "video" : "perso"}:${state.avatar}`;
     if (v.dataset.key === key) return;
     v.dataset.key = key;
@@ -203,7 +206,7 @@ class Session {
       this.renderCharacter();
     };
     if (render3d) {
-      v.innerHTML = `<video class="dial-video" src="${esc(render3d)}" muted loop playsinline autoplay preload="auto"></video>`;
+      v.innerHTML = `<video class="dial-video" src="${esc(render3d)}" autoplay loop muted playsinline preload="auto" aria-hidden="true"></video>`;
       this.video = v.querySelector("video");
       this.video.playbackRate = speed();
       if (this.paused) this.video.pause();
@@ -255,6 +258,7 @@ class Session {
   // --- Phases ---
   startPhase(phase) {
     this.phase = phase;
+    if (this.video && phase !== "tenue") this.video.playbackRate = speed();
     this.elapsed = 0;
     this.spoken = new Set();
     stopSpeaking();
@@ -374,9 +378,26 @@ class Session {
 
   update() {
     this.updateTimer();
+    this.syncVideo();
     this.renderCharacter();
     this.updateWave();
     this.updateTimeline();
+  }
+
+  // Vidéo calée sur le souffle : inspiration = 40 % premiers de la boucle, expiration = le reste
+  syncVideo() {
+    const vd = this.video;
+    if (!vd || !this.videoSouffle || this.phase !== "tenue" || !vd.duration || vd.readyState < 2) return;
+    const cycle = this.breathIn + this.breathOut;
+    const t = this.elapsed % cycle;
+    const D = vd.duration, split = 0.4 * D;
+    const target = t < this.breathIn ? (t / this.breathIn) * split : split + ((t - this.breathIn) / this.breathOut) * (D - split);
+    // Vitesse ajustée pour suivre le souffle réglé par l'utilisateur, recalage si l'écart devient visible
+    const rate = (t < this.breathIn ? split / (this.breathIn / 1000) : (D - split) / (this.breathOut / 1000)) * speed();
+    if (Math.abs(vd.playbackRate - rate) > 0.02) vd.playbackRate = Math.min(4, Math.max(0.25, rate));
+    let diff = Math.abs(vd.currentTime - target);
+    diff = Math.min(diff, D - diff);
+    if (diff > 0.25) vd.currentTime = target;
   }
 
   // Barre de progression de l'exercice en cours (tenue : déplaçable ; installation / sortie : indicative)
