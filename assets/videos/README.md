@@ -43,7 +43,7 @@ ffmpeg -i source.mov -an -vf "scale=720:-2,fps=30" -c:v libx264 -profile:v high 
 | Fichier | Exercice | Origine |
 | --- | --- | --- |
 | `pil-roll-up.mp4` | Enroulé complet (Roll-Up) | Personnage Mixamo posé os par os (mouvement créé), calé sur le souffle |
-| `pil-pompes-prep.mp4` | Préparation aux pompes | Personnage Mixamo, animation « Start Plank » |
+| `pil-pompes-prep.mp4` | Préparation aux pompes | Personnage Mixamo posé os par os (pompes en planche, mains et pieds fixes), calé sur le souffle |
 | `etir-epaule-croisee.mp4` | Épaule, bras croisé | Personnage Mixamo, animation d'étirement (GLB) |
 
 Les fichiers sources (.fbx, .glb) ne sont pas publiés : seules les vidéos rendues le sont (conditions Mixamo).
