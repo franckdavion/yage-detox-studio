@@ -206,7 +206,7 @@ class Session {
       this.renderCharacter();
     };
     if (render3d) {
-      v.innerHTML = `<video class="dial-video" src="${esc(render3d)}" autoplay loop muted playsinline preload="auto" aria-hidden="true"></video>`;
+      v.innerHTML = `<video class="dial-video" style="--vzoom:${vid.zoom}" src="${esc(render3d)}" autoplay loop muted playsinline preload="auto" aria-hidden="true"></video>`;
       this.video = v.querySelector("video");
       this.video.playbackRate = speed();
       if (this.paused) this.video.pause();

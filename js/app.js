@@ -19,7 +19,7 @@ import { speak, stopSpeaking, ttsSupported, frenchVoices } from "./tts.js";
 import { generate, totalSeconds } from "./sequences.js";
 import { importFiles, importJSON, removeBook } from "./import.js";
 
-export const APP_VERSION = "16 · boucles vidéo";
+export const APP_VERSION = "17 · planche 3D";
 // Contrôle au démarrage : chaque étirement respecte le modèle (console du navigateur)
 verifierEtirements(POSTURES_ETIREMENTS, POSES);
 const view = document.getElementById("view");
@@ -149,7 +149,7 @@ function postureCard(p) {
 // Visuel d'une carte : boucle vidéo si l'exercice en a une, sinon personnage (étirements, Pilates) ou photo
 function cardVisual(p) {
   const vid = videoFor(p, state.avatar);
-  if (vid) return `<div class="pfig card-art card-video" data-char-fallback="${esc(p.id)}"><video src="${esc(vid.src)}" loop muted playsinline preload="metadata" aria-hidden="true"></video><span class="video-badge">Vidéo</span></div>`;
+  if (vid) return `<div class="pfig card-art card-video" data-char-fallback="${esc(p.id)}"><video src="${esc(vid.src)}" style="object-position:${esc(vid.cadrage)}" loop muted playsinline preload="metadata" aria-hidden="true"></video><span class="video-badge">Vidéo</span></div>`;
   return (p.etirement || p.pilates) && !p.image ? `<div class="pfig card-art" data-char="${esc(p.id)}"></div>` : postureFigure(p, { cls: "card-art" });
 }
 
@@ -394,7 +394,7 @@ function renderPosture(id) {
   const heroSlot = view.querySelector(".hero-art");
   if (heroVid) {
     heroSlot.classList.add("hero-video");
-    heroSlot.innerHTML = `<video src="${esc(heroVid.src)}" autoplay loop muted playsinline preload="auto" aria-label="Démonstration vidéo : ${esc(p.nom)}"></video>`;
+    heroSlot.innerHTML = `<video src="${esc(heroVid.src)}" style="object-position:${esc(heroVid.cadrage)}" autoplay loop muted playsinline preload="auto" aria-label="Démonstration vidéo : ${esc(p.nom)}"></video>`;
     heroSlot.querySelector("video").addEventListener("error", () => {
       heroSlot.classList.remove("hero-video");
       stopViewAnims.push(mountPoseAnimation(heroSlot, p, { mode: "boucle" }));
